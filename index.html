@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tap Wars</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #121212;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    h1 { margin-top: 30px; }
+    #game {
+      margin-top: 50px;
+    }
+    #tapButton {
+      padding: 20px 40px;
+      font-size: 24px;
+      margin-top: 20px;
+      cursor: pointer;
+      background: #1f8ef1;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+    }
+    #startButton {
+      padding: 15px 30px;
+      font-size: 20px;
+      background: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+    #score {
+      font-size: 36px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🔥 TAP WARS 🔥</h1>
+  <div id="game">
+    <div id="countdown">Click Start to Begin</div>
+    <button id="startButton">Start Game</button>
+    <button id="tapButton" class="hidden">TAP!</button>
+    <div id="score" class="hidden">Score: 0</div>
+    <button id="restartButton" class="hidden">Play Again</button>
+  </div>
+
+  <script>
+    const countdown = document.getElementById('countdown');
+    const startButton = document.getElementById('startButton');
+    const tapButton = document.getElementById('tapButton');
+    const scoreDisplay = document.getElementById('score');
+    const restartButton = document.getElementById('restartButton');
+
+    let score = 0;
+    let timeLeft = 10;
+    let interval;
+
+    function startGame() {
+      score = 0;
+      timeLeft = 10;
+      scoreDisplay.textContent = 'Score: 0';
+      countdown.textContent = 'Time: 10s';
+      startButton.classList.add('hidden');
+      tapButton.classList.remove('hidden');
+      scoreDisplay.classList.remove('hidden');
+      restartButton.classList.add('hidden');
+
+      interval = setInterval(() => {
+        timeLeft--;
+        countdown.textContent = 'Time: ' + timeLeft + 's';
+
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      tapButton.classList.add('hidden');
+      countdown.textContent = '⏱ Time’s up!';
+      restartButton.classList.remove('hidden');
+    }
+
+    tapButton.addEventListener('click', () => {
+      score++;
+      scoreDisplay.textContent = 'Score: ' + score;
+    });
+
+    startButton.addEventListener('click', startGame);
+    restartButton.addEventListener('click', () => {
+      location.reload();
+    });
+  </script>
+
+</body>
+</html>
