@@ -89,7 +89,7 @@
       border-radius: 12px;
       transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
       position: relative;
-      z-index: 10;
+      z-index: 2;
       font-weight: 600;
     }
     #tapButton {
@@ -216,7 +216,7 @@
       min-height: 24px;
       font-weight: 600;
     }
-    .streakDisplay {
+    #streakDisplay {
       font-size: clamp(0.9em, 3.5vw, 1.2em);
       color: var(--orange);
       text-shadow: 0 0 8px var(--orange);
@@ -228,7 +228,6 @@
       left: 50%;
       transform: translateX(-50%);
       animation: streakPop 0.5s ease-out;
-      pointer-events: none;
     }
     @keyframes streakPop {
       0% { transform: translateX(-50%) translateY(0); opacity: 1; }
@@ -472,11 +471,11 @@
   </div>
   <canvas id="particleCanvas"></canvas>
 
-  <!-- Sounds (local with Freesound fallback) -->
-  <audio id="tapSound" src="/sounds/tap.mp3" onerror="this.src='https://freesound.org/data/previews/256/256113_3263906-lq.mp3'"></audio>
-  <audio id="powerSound" src="/sounds/power.mp3" onerror="this.src='https://freesound.org/data/previews/331/331912_3248244-lq.mp3'"></audio>
-  <audio id="endSound" src="/sounds/end.mp3" onerror="this.src='https://freesound.org/data/previews/171/171497_2398400-lq.mp3'"></audio>
-  <audio id="comboSound" src="/sounds/combo.mp3" onerror="this.src='https://freesound.org/data/previews/66/66717_634166-lq.mp3'"></audio>
+  <!-- Sounds (all CC0 from Freesound) -->
+  <audio id="tapSound" src="https://freesound.org/data/previews/256/256113_3263906-lq.mp3"></audio>
+  <audio id="powerSound" src="https://freesound.org/data/previews/331/331912_3248244-lq.mp3"></audio>
+  <audio id="endSound" src="https://freesound.org/data/previews/171/171497_2398400-lq.mp3"></audio>
+  <audio id="comboSound" src="https://freesound.org/data/previews/66/66717_634166-lq.mp3"></audio>
 
   <script>
     const body = document.body;
@@ -520,19 +519,18 @@
     let lastTapTime = 0;
     let comboCount = 0;
     let tapStreak = 0;
-    let highScore = parseInt(localStorage.getItem('tapWarsHighScore') || '0');
+    let highScore = parseInt(localStorage.getItem('tapWarsHighScore') || 0);
     let leaderboardScores = JSON.parse(localStorage.getItem('tapWarsLeaderboard') || '[]');
     let particles = [];
     let sparkles = [];
     let fireworks = [];
     let sprites = [];
-    let avatar = null;
     const tapWords = ['TAP!', 'SMASH!', 'HIT!', 'BAM!', 'POW!'];
     const achievementsData = [
       { id: 'score50', name: 'Score Master', condition: () => score >= 50, unlocked: false },
       { id: 'combo5', name: 'Combo King', condition: () => comboCount >= 5, unlocked: false },
       { id: 'streak10', name: 'Tap Frenzy', condition: () => tapStreak >= 10, unlocked: false },
-      { id: 'play5', name: 'Dedicated', condition: () => (parseInt(localStorage.getItem('tapWarsGamesPlayed') || '0') + 1) >= 5, unlocked: false },
+      { id: 'play5', name: 'Dedicated', condition: () => (parseInt(localStorage.getItem('tapWarsGamesPlayed') || 0) + 1) >= 5, unlocked: false },
       { id: 'powerUp', name: 'Power Surge', condition: () => doublePoints, unlocked: false },
     ];
     let savedAchievements = JSON.parse(localStorage.getItem('tapWarsAchievements') || '{}');
@@ -550,20 +548,13 @@
       canvas.height = window.innerHeight;
     });
 
-    // Sprite sheets
+    // Sprite sheet setup (placeholder - replace with actual sprite sheet)
     const spriteSheet = new Image();
-    spriteSheet.src = 'https://opengameart.org/sites/default/files/explosion.png'; // CC0 explosion
-    const spriteWidth = 64;
+    spriteSheet.src = 'https://opengameart.org/sites/default/files/explosion.png'; // CC0 sprite sheet
+    const spriteWidth = 64; // Adjust based on sprite sheet
     const spriteHeight = 64;
     const spriteFrames = 8;
-    const spriteDuration = 400;
-
-    const avatarSpriteSheet = new Image();
-    avatarSpriteSheet.src = '/sprites/dancer.png'; // Host AI-generated or CC0 sprite sheet
-    const avatarWidth = 64;
-    const avatarHeight = 64;
-    const avatarFrames = 8;
-    const avatarDurationBase = 600; // Base duration for slow animation (ms)
+    const spriteDuration = 400; // ms
 
     // Particle system
     function createParticles(x, y, count = 20, hue = Math.random() * 360, isFiery = false) {
@@ -591,31 +582,6 @@
         frame: 0,
         startTime: Date.now(),
       });
-    }
-
-    // Avatar animation
-    function createAvatar() {
-      const safeMargin = 100; // Avoid edges
-      const gameRect = document.getElementById('game').getBoundingClientRect();
-      let x, y;
-      do {
-        x = safeMargin + Math.random() * (canvas.width - 2 * safeMargin);
-        y = safeMargin + Math.random() * (canvas.height - 2 * safeMargin);
-      } while (
-        x > gameRect.left - 100 && x < gameRect.right + 100 &&
-        y > gameRect.top - 100 && y < gameRect.bottom + 100
-      );
-      avatar = {
-        x,
-        y,
-        targetX: x,
-        targetY: y,
-        frame: 0,
-        startTime: Date.now(),
-        tapSpeed: avatarDurationBase,
-        isPowerUp: false,
-        moveTime: Date.now(),
-      };
     }
 
     // Sparkle system
@@ -693,53 +659,6 @@
         }
       });
 
-      // Avatar
-      if (avatar) {
-        // Update position
-        const now = Date.now();
-        if (now - avatar.moveTime > 2500) {
-          const safeMargin = 100;
-          const gameRect = document.getElementById('game').getBoundingClientRect();
-          let newX, newY;
-          do {
-            newX = safeMargin + Math.random() * (canvas.width - 2 * safeMargin);
-            newY = safeMargin + Math.random() * (canvas.height - 2 * safeMargin);
-          } while (
-            newX > gameRect.left - 100 && newX < gameRect.right + 100 &&
-            newY > gameRect.top - 100 && newY < gameRect.bottom + 100
-          );
-          avatar.targetX = newX;
-          avatar.targetY = newY;
-          avatar.moveTime = now;
-        }
-        // Smooth movement
-        const lerpSpeed = 0.05;
-        avatar.x += (avatar.targetX - avatar.x) * lerpSpeed;
-        avatar.y += (avatar.targetY - avatar.y) * lerpSpeed;
-
-        // Animation
-        const elapsed = now - avatar.startTime;
-        const frameDuration = Math.max(avatar.tapSpeed / avatarFrames, 50);
-        const frame = Math.floor((elapsed / frameDuration) % avatarFrames);
-        const scale = avatar.isPowerUp ? 1.2 : 1 + Math.sin(elapsed / 200) * 0.1;
-        const rotation = Math.sin(elapsed / 200) * 0.05;
-
-        ctx.save();
-        ctx.globalCompositeOperation = avatar.isPowerUp ? 'lighter' : 'source-over';
-        ctx.translate(avatar.x, avatar.y);
-        // Pseudo-3D perspective
-        const perspective = 0.002;
-        ctx.transform(1, 0, perspective * (avatar.x - canvas.width / 2), 1, 0, 0);
-        ctx.rotate(rotation);
-        ctx.scale(scale, scale);
-        ctx.drawImage(
-          avatarSpriteSheet,
-          frame * avatarWidth, 0, avatarWidth, avatarHeight,
-          -avatarWidth / 2, -avatarHeight / 2, avatarWidth, avatarHeight
-        );
-        ctx.restore();
-      }
-
       // Fireworks
       fireworks = fireworks.filter(f => f.life > 0);
       fireworks.forEach(f => {
@@ -753,7 +672,7 @@
         ctx.fill();
       });
 
-      if (particles.length > 0 || sparkles.length > 0 || sprites.length > 0 || avatar || fireworks.length > 0) {
+      if (particles.length > 0 || sparkles.length > 0 || sprites.length > 0 || fireworks.length > 0) {
         requestAnimationFrame(updateCanvas);
       }
     }
@@ -788,7 +707,6 @@
       progressBar.style.width = '100%';
       gameOver.classList.remove('show');
       tapButton.textContent = 'TAP!';
-      avatar = null;
 
       startButton.classList.add('hidden');
       tapButton.classList.remove('hidden');
@@ -807,8 +725,7 @@
       doublePoints = false;
       tapButton.classList.remove('double');
 
-      createAvatar();
-      localStorage.setItem('tapWarsGamesPlayed', parseInt(localStorage.getItem('tapWarsGamesPlayed') || '0') + 1);
+      localStorage.setItem('tapWarsGamesPlayed', parseInt(localStorage.getItem('tapWarsGamesPlayed') || 0) + 1);
 
       interval = setInterval(() => {
         timeLeft--;
@@ -830,15 +747,13 @@
       doublePoints = true;
       powerUp.classList.remove('hidden');
       powerSound.currentTime = 0;
-      powerSound.play().catch(e => console.error('Power sound:', e));
+      powerSound.play().catch(e => console.error('Power sound failed:', e));
       tapButton.classList.add('double');
-      if (avatar) avatar.isPowerUp = true;
 
       setTimeout(() => {
         doublePoints = false;
         powerUp.classList.add('hidden');
         tapButton.classList.remove('double');
-        if (avatar) avatar.isPowerUp = false;
       }, 3000);
     }
 
@@ -855,19 +770,12 @@
         if (comboCount >= 3) {
           points += 2;
           comboSound.currentTime = 0;
-          comboSound.play().catch(e => console.error('Combo sound:', e));
+          comboSound.play().catch(e => console.error('Combo sound failed:', e));
           createParticles(x, y, 30, 20, true);
         }
       } else {
         comboCount = 1;
         tapStreak = 1;
-      }
-
-      // Update avatar animation speed
-      if (avatar) {
-        const tapInterval = now - lastTapTime;
-        avatar.tapSpeed = Math.max(avatarDurationBase * (tapInterval / 400), 50);
-        avatar.startTime = now;
       }
 
       score += points;
@@ -894,7 +802,7 @@
 
       // Audio
       tapSound.currentTime = 0;
-      tapSound.play().catch(e => console.error('Tap sound:', e));
+      tapSound.play().catch(e => console.error('Tap sound failed:', e));
 
       if (navigator.vibrate) {
         navigator.vibrate(50);
@@ -967,7 +875,7 @@
 
     function endGame() {
       countdown.textContent = "Time's Up!";
-      endSound.play().catch(e => console.error('End sound:', e));
+      endSound.play().catch(e => console.error('End sound failed:', e));
       tapButton.classList.add('hidden');
       restartButton.classList.remove('hidden');
       shareBtn.classList.remove('hidden');
@@ -1003,7 +911,6 @@
 
       finalScore.textContent = `Score: ${score}`;
       createParticles(window.innerWidth / 2, window.innerHeight / 2, 30);
-      avatar = null;
     }
 
     function updateLeaderboard() {
