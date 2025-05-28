@@ -93,19 +93,20 @@
       font-weight: 600;
     }
     #tapButton {
-      background: var(--blue);
-      color: #fff;
-      box-shadow: 0 8px var(--blue-dark), 0 0 15px var(--blue);
       width: clamp(150px, 50vw, 250px);
       height: clamp(60px, 15vw, 100px);
       font-size: clamp(1.2em, 5vw, 1.5em);
+      background: url('https://opengameart.org/sites/default/files/button_normal.png') no-repeat center/cover;
+      color: #fff;
+      box-shadow: 0 8px #4b47a5, 0 0 15px var(--purple);
       animation: pulseButton 1.5s infinite;
       overflow: hidden;
+      text-shadow: 0 0 5px #000;
     }
     #tapButton:active {
+      background: url('https://opengameart.org/sites/default/files/button_pressed.png') no-repeat center/cover;
       animation: pop 0.2s ease-in-out;
-      background: var(--orange);
-      box-shadow: 0 4px #aa3e17;
+      box-shadow: 0 4px #3a3680;
       transform: translateY(4px);
     }
     #tapButton.shockwave::before {
@@ -124,11 +125,9 @@
       100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
     }
     #tapButton.double {
-      background: var(--cyan);
       box-shadow: 0 8px var(--cyan-dark), 0 0 20px var(--cyan);
       text-shadow: 0 0 8px var(--cyan);
       position: relative;
-      overflow: hidden;
     }
     #tapButton.double::after {
       content: '';
@@ -141,11 +140,9 @@
       animation: glowRing 1.5s infinite;
     }
     body.light #tapButton {
-      background: var(--purple);
       box-shadow: 0 8px #4b47a5, 0 0 15px var(--purple);
     }
     body.light #tapButton.double {
-      background: var(--cyan);
       box-shadow: 0 8px var(--cyan-dark), 0 0 20px var(--cyan);
     }
     @keyframes pulseButton {
@@ -471,11 +468,11 @@
   </div>
   <canvas id="particleCanvas"></canvas>
 
-  <!-- Sounds (all CC0 from Freesound) -->
-  <audio id="tapSound" src="https://freesound.org/data/previews/256/256113_3263906-lq.mp3"></audio>
-  <audio id="powerSound" src="https://freesound.org/data/previews/331/331912_3248244-lq.mp3"></audio>
-  <audio id="endSound" src="https://freesound.org/data/previews/171/171497_2398400-lq.mp3"></audio>
-  <audio id="comboSound" src="https://freesound.org/data/previews/66/66717_634166-lq.mp3"></audio>
+  <!-- Sounds (prefer local hosting, fallback to Freesound) -->
+  <audio id="tapSound" src="/sounds/tap.mp3" onerror="this.src='https://freesound.org/data/previews/256/256113_3263906-lq.mp3'"></audio>
+  <audio id="powerSound" src="/sounds/power.mp3" onerror="this.src='https://freesound.org/data/previews/331/331912_3248244-lq.mp3'"></audio>
+  <audio id="endSound" src="/sounds/end.mp3" onerror="this.src='https://freesound.org/data/previews/171/171497_2398400-lq.mp3'"></audio>
+  <audio id="comboSound" src="/sounds/combo.mp3" onerror="this.src='https://freesound.org/data/previews/66/66717_634166-lq.mp3'"></audio>
 
   <script>
     const body = document.body;
@@ -525,6 +522,7 @@
     let sparkles = [];
     let fireworks = [];
     let sprites = [];
+    let powerSprites = [];
     const tapWords = ['TAP!', 'SMASH!', 'HIT!', 'BAM!', 'POW!'];
     const achievementsData = [
       { id: 'score50', name: 'Score Master', condition: () => score >= 50, unlocked: false },
@@ -548,13 +546,20 @@
       canvas.height = window.innerHeight;
     });
 
-    // Sprite sheet setup (placeholder - replace with actual sprite sheet)
-    const spriteSheet = new Image();
-    spriteSheet.src = 'https://opengameart.org/sites/default/files/explosion.png'; // CC0 sprite sheet
-    const spriteWidth = 64; // Adjust based on sprite sheet
-    const spriteHeight = 64;
-    const spriteFrames = 8;
-    const spriteDuration = 400; // ms
+    // Sprite sheets
+    const tapSpriteSheet = new Image();
+    tapSpriteSheet.src = 'https://opengameart.org/sites/default/files/explosion.png'; // CC0 explosion
+    const tapSpriteWidth = 64;
+    const tapSpriteHeight = 64;
+    const tapSpriteFrames = 8;
+    const tapSpriteDuration = 400;
+
+    const powerSpriteSheet = new Image();
+    powerSpriteSheet.src = 'https://opengameart.org/sites/default/files/star.png'; // CC0 star
+    const powerSpriteWidth = 32;
+    const powerSpriteHeight = 32;
+    const powerSpriteFrames = 4;
+    const powerSpriteDuration = 800;
 
     // Particle system
     function createParticles(x, y, count = 20, hue = Math.random() * 360, isFiery = false) {
@@ -574,9 +579,19 @@
       }
     }
 
-    // Sprite animation
+    // Tap sprite animation
     function createSprite(x, y) {
       sprites.push({
+        x,
+        y,
+        frame: 0,
+        startTime: Date.now(),
+      });
+    }
+
+    // Power-up sprite animation
+    function createPowerSprite(x, y) {
+      powerSprites.push({
         x,
         y,
         frame: 0,
@@ -645,18 +660,34 @@
         ctx.fill();
       });
 
-      // Sprites
-      sprites = sprites.filter(s => Date.now() - s.startTime < spriteDuration);
+      // Tap sprites
+      sprites = sprites.filter(s => Date.now() - s.startTime < tapSpriteDuration);
       sprites.forEach(s => {
         const elapsed = Date.now() - s.startTime;
-        const frame = Math.floor((elapsed / spriteDuration) * spriteFrames);
-        if (frame < spriteFrames) {
+        const frame = Math.floor((elapsed / tapSpriteDuration) * tapSpriteFrames);
+        if (frame < tapSpriteFrames) {
           ctx.drawImage(
-            spriteSheet,
-            frame * spriteWidth, 0, spriteWidth, spriteHeight,
-            s.x - spriteWidth / 2, s.y - spriteHeight / 2, spriteWidth, spriteHeight
+            tapSpriteSheet,
+            frame * tapSpriteWidth, 0, tapSpriteWidth, tapSpriteHeight,
+            s.x - tapSpriteWidth / 2, s.y - tapSpriteHeight / 2, tapSpriteWidth, tapSpriteHeight
           );
         }
+      });
+
+      // Power-up sprites
+      powerSprites = powerSprites.filter(s => Date.now() - s.startTime < powerSpriteDuration);
+      powerSprites.forEach(s => {
+        const elapsed = Date.now() - s.startTime;
+        const frame = Math.floor((elapsed / powerSpriteDuration) * powerSpriteFrames) % powerSpriteFrames;
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        ctx.rotate(elapsed / 200);
+        ctx.drawImage(
+          powerSpriteSheet,
+          frame * powerSpriteWidth, 0, powerSpriteWidth, powerSpriteHeight,
+          -powerSpriteWidth / 2, -powerSpriteHeight / 2, powerSpriteWidth, powerSpriteHeight
+        );
+        ctx.restore();
       });
 
       // Fireworks
@@ -672,7 +703,7 @@
         ctx.fill();
       });
 
-      if (particles.length > 0 || sparkles.length > 0 || sprites.length > 0 || fireworks.length > 0) {
+      if (particles.length > 0 || sparkles.length > 0 || sprites.length > 0 || powerSprites.length > 0 || fireworks.length > 0) {
         requestAnimationFrame(updateCanvas);
       }
     }
@@ -707,6 +738,7 @@
       progressBar.style.width = '100%';
       gameOver.classList.remove('show');
       tapButton.textContent = 'TAP!';
+      powerSprites = [];
 
       startButton.classList.add('hidden');
       tapButton.classList.remove('hidden');
@@ -749,6 +781,9 @@
       powerSound.currentTime = 0;
       powerSound.play().catch(e => console.error('Power sound failed:', e));
       tapButton.classList.add('double');
+
+      const rect = tapButton.getBoundingClientRect();
+      createPowerSprite(rect.left + rect.width / 2, rect.top - 20);
 
       setTimeout(() => {
         doublePoints = false;
@@ -794,11 +829,6 @@
       createScorePop(x, y, `+${points}`);
       createParticles(x, y);
       createSprite(x, y);
-
-      // Streak display
-      if (tapStreak >= 2) {
-        createStreakDisplay(x, y, `${tapStreak} Taps!`);
-      }
 
       // Audio
       tapSound.currentTime = 0;
