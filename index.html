@@ -94,8 +94,6 @@
       background: var(--green);
       color: #fff;
       box-shadow: 0 5px #178c3d;
-      position: relative;
-      z-index: 10;
     }
     #restartButton {
       background: var(--orange);
@@ -125,6 +123,9 @@
     #themeToggle:hover {
       background: #4f51c9;
     }
+    .hidden {
+      display: none !important;
+    }
     @keyframes pop {
       0% { transform: scale(1); }
       50% { transform: scale(1.2); }
@@ -143,9 +144,6 @@
     }
     .bounce {
       animation: bounce 0.2s;
-    }
-    .hidden {
-      display: none;
     }
     #progressBarContainer {
       width: 80%;
@@ -270,6 +268,7 @@
     }
 
     function startGame() {
+      themeToggle.classList.add('hidden'); // Hide theme toggle
       score = 0;
       timeLeft = 10;
       scoreDisplay.textContent = 'Score: 0';
@@ -352,6 +351,7 @@
       progressContainer.classList.add('hidden');
       powerUp.classList.add('hidden');
       highScoreDisplay.classList.remove('hidden');
+      themeToggle.classList.remove('hidden'); // Show toggle again
 
       if (score > highScore) {
         highScore = score;
@@ -371,9 +371,7 @@
         confetti.style.left = Math.random() * 100 + "vw";
         confetti.style.background = `hsl(${Math.random() * 360}, 100%, 60%)`;
         document.body.appendChild(confetti);
-        setTimeout(() => {
-          confetti.remove();
-        }, 3000);
+        setTimeout(() => confetti.remove(), 3000);
       }
     }
 
@@ -396,18 +394,6 @@
       const mode = body.classList.contains('light') ? 'light' : 'dark';
       themeToggle.textContent = mode === 'light' ? '🌞 Light Mode' : '🌙 Dark Mode';
       localStorage.setItem('tapWarsTheme', mode);
-
-      // Ensure game is in reset state if not started
-      if (!startButton.classList.contains('hidden')) {
-        tapButton.classList.add('hidden');
-        scoreDisplay.classList.add('hidden');
-        restartButton.classList.add('hidden');
-        shareBtn.classList.add('hidden');
-        countdown.textContent = 'Click Start to Begin';
-        progressContainer.classList.add('hidden');
-        powerUp.classList.add('hidden');
-        highScoreDisplay.classList.remove('hidden');
-      }
     });
 
     startButton.addEventListener('click', startGame);
