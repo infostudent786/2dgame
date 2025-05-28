@@ -34,7 +34,7 @@
       padding: 0;
       user-select: none;
       min-height: 100vh;
-      touch-action: manipulation; /* Prevent zoom/pan */
+      touch-action: manipulation;
       transition: color 0.4s;
     }
     body.light {
@@ -361,7 +361,7 @@
     const powerUp = document.getElementById('powerUp');
     const highScoreDisplay = document.getElementById('highScoreDisplay');
     const gameOver = document.getElementById('gameOver');
-    const finalScoreDisplay = document.getElementById('finalScore');
+    const finalScore = document.getElementById('finalScore');
     const finalHighScore = document.getElementById('finalHighScore');
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
@@ -372,7 +372,7 @@
     let doublePoints = false;
     let lastTapTime = 0;
     let comboCount = 0;
-    let highScore = parseInt(localStorage.getItem('tapWarsHighScore') || '0');
+    let highScore = parseInt(localStorage.getItem('tapWarsHighScore') || 0);
     let particles = [];
 
     // Canvas setup
@@ -384,8 +384,8 @@
     });
 
     // Particle system
-    function createParticles(x, y, hue = Math.random() * 360) {
-      for (let i = 0; i < 20; i++) {
+    function createParticles(x, y, count = 20, hue = Math.random() * 360) {
+      for (let i = 0; i < count; i++) {
         const angle = Math.random() * 2 * Math.PI;
         const speed = Math.random() * 5 + 2;
         particles.push({
@@ -399,12 +399,13 @@
           life: 1,
         });
       }
-        }
-      requestAnimationFrame(updateParticles);
+      if (particles.length > 0 && !interval) requestAnimationFrame(updateParticles);
+    }
+
     function updateParticles() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles = particles.filter(p => p.life > 0));
-      particles.forEach((p => {
+      particles = particles.filter(p => p.life > 0);
+      particles.forEach(p => {
         p.x += p.vx;
         p.y += p.vy;
         p.life -= 0.02;
@@ -413,7 +414,7 @@
         ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
         ctx.fillStyle = `hsla(${p.hue}, 100%, 50%, ${p.alpha})`;
         ctx.fill();
-      }));
+      });
       if (particles.length > 0) requestAnimationFrame(updateParticles);
     }
 
@@ -428,8 +429,8 @@
       score = 0;
       timeLeft = 10;
       comboCount = 0;
-      scoreDisplay.textContent = 'Score: 0}';
-      comboDisplay.textContent = 'Score: x1';
+      scoreDisplay.textContent = 'Score: 0';
+      comboDisplay.textContent = 'Combo: x1';
       countdown.textContent = 'Time: 10s';
       progressBar.style.width = '100%';
       gameOver.classList.remove('show');
@@ -449,7 +450,7 @@
       interval = setInterval(() => {
         timeLeft--;
         countdown.textContent = `Time: ${timeLeft}s`;
-        progressBar.style.width = ' ${(timeLeft * 10)}%';
+        progressBar.style.width = `${timeLeft * 10}%`;
 
         if (timeLeft === 5 || timeLeft === 2) {
           activatePowerUp();
@@ -477,8 +478,9 @@
     }
 
     function tap(e) {
-      let x = e.clientX || e.clientX || e.touches[0].clientX;
-      let y = e.clientY || e.clientY || e.touches[0].clientY;
+      e.preventDefault();
+      let x = e.clientX || (e.touches && e.touches[0].clientX);
+      let y = e.clientY || (e.touches && e.touches[0].clientY);
       let now = Date.now();
       let points = doublePoints ? 2 : 1;
 
@@ -488,19 +490,18 @@
           points += 2;
           comboSound.currentTime = 0;
           comboSound.play();
-          comboDisplay.textContent = `Combo: x${comboCount}`;
         }
       } else {
         comboCount = 1;
-        comboDisplay.textContent = 'Combo: x1';
       }
 
       score += points;
       lastTapTime = now;
       scoreDisplay.textContent = `Score: ${score}`;
+      comboDisplay.textContent = `Combo: x${comboCount}`;
       scoreDisplay.classList.add('bounce');
       tapSound.currentTime = 0;
-      tapSound.volume = 0.5;
+      tapSound.volume = 0.7;
       tapSound.play();
 
       // Visual feedback
@@ -516,6 +517,7 @@
     }
 
     function createRipple(x, y) {
+      if (!x || !y) return;
       const ripple = document.createElement('div');
       ripple.classList.add('ripple');
       ripple.style.left = `${x - 10}px`;
@@ -525,6 +527,7 @@
     }
 
     function createScorePop(x, y, text) {
+      if (!x || !y) return;
       const pop = document.createElement('div');
       pop.classList.add('score-pop');
       pop.textContent = text;
@@ -550,15 +553,15 @@
       if (score > highScore) {
         highScore = score;
         localStorage.setItem('tapWarsHighScore', score);
-        finalHighScoreDisplay.textContent = `🏆 New High Score: ${score}!`;
+        finalHighScore.textContent = `🏆 New High Score: ${score}!`;
         highScoreDisplay.textContent = `🏆 New High Score: ${score}!`;
       } else {
-        finalHighScoreDisplay.textContent = `🏆 High Score: ${highScore}`;
+        finalHighScore.textContent = `🏆 High Score: ${highScore}`;
         highScoreDisplay.textContent = `🏆 High Score: ${highScore}`;
       }
 
-      finalScoreDisplay.textContent = `Score: ${score}`;
-      createParticles(window.innerWidth / 2, 100, Math.random() * 360);
+      finalScore.textContent = `Score: ${score}`;
+      createParticles(window.innerWidth / 2, window.innerHeight / 2, 30);
     }
 
     function shareScore() {
@@ -581,17 +584,14 @@
       const mode = body.classList.contains('light') ? 'light' : 'dark';
       themeToggle.textContent = mode === 'light' ? '🌞 Light Mode' : '🌙 Dark Mode';
       localStorage.setItem('tapWarsTheme', mode);
-    }));
+    });
 
     // Event listeners
     startButton.addEventListener('click', startGame);
     restartButton.addEventListener('click', startGame);
-    playAgainBtn.addEventListener('click', startGame));
+    playAgainBtn.addEventListener('click', startGame);
     tapButton.addEventListener('click', tap);
-    tapButton.addEventListener('touchstart', (e => {
-      e.preventDefault();
-      tap(e);
-    }));
+    tapButton.addEventListener('touchstart', tap);
     shareBtn.addEventListener('click', shareScore);
   </script>
 </body>
