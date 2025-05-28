@@ -1,162 +1,405 @@
+<!-- Save as index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🔥 Tap Dash</title>
+  <title>🔥 TAP WARS</title>
   <style>
+    :root {
+      --bg-light: #f5f5f5;
+      --text-light: #222;
+      --bg-dark: #111;
+      --text-dark: #eee;
+      --blue: #1f8ef1;
+      --blue-dark: #1664b0;
+      --green: #22c55e;
+      --orange: #f97316;
+      --purple: #6366f1;
+      --cyan: #00ffcc;
+      --cyan-dark: #009f89;
+    }
     body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-dark);
+      text-align: center;
       margin: 0;
       padding: 0;
-      text-align: center;
-      font-family: 'Arial', sans-serif;
-      background: #121212;
-      color: white;
-      overflow: hidden;
+      user-select: none;
+      transition: background 0.4s, color 0.4s;
     }
-    button {
-      font-size: 1.2rem;
-      padding: 15px 30px;
-      margin: 10px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
+    body.light {
+      background: var(--bg-light);
+      color: var(--text-light);
     }
-    #tapButton {
-      position: absolute;
-      transition: all 0.3s ease;
-      background: #00bcd4;
-      color: white;
-      box-shadow: 0 5px #007e8a;
+    h1 {
+      margin-top: 40px;
+      font-size: 3em;
+      color: var(--orange);
+      text-shadow: 0 0 10px var(--orange);
+      transition: color 0.4s;
     }
-    #tapButton:active {
-      transform: scale(1.2);
-      box-shadow: none;
+    body.light h1 {
+      color: var(--purple);
+      text-shadow: 0 0 10px var(--purple);
     }
-    .hidden {
-      display: none;
-    }
-    #score {
-      font-size: 1.8rem;
-      margin-top: 20px;
+    #game {
+      margin-top: 30px;
     }
     #countdown {
-      margin: 20px 0;
-      font-size: 1.3rem;
+      font-size: 1.5em;
+      margin-bottom: 10px;
+      min-height: 28px;
+    }
+    button {
+      padding: 20px 40px;
+      font-size: 1.2em;
+      margin: 10px 5px;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      transition: 0.2s;
+      user-select: none;
+      position: relative;
+      z-index: 10;
+    }
+    #tapButton {
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 5px var(--blue-dark);
+    }
+    #tapButton:active {
+      animation: pop 0.2s ease-in-out;
+      background: var(--orange);
+      box-shadow: 0 2px #aa3e17;
+      transform: translateY(3px);
+    }
+    #tapButton.double {
+      background: var(--cyan);
+      box-shadow: 0 5px var(--cyan-dark);
+      text-shadow: 0 0 8px var(--cyan);
+    }
+    body.light #tapButton {
+      background: var(--purple);
+      box-shadow: 0 5px #4b47a5;
+      color: #fff;
+    }
+    body.light #tapButton.double {
+      background: var(--cyan);
+      box-shadow: 0 5px var(--cyan-dark);
+      text-shadow: 0 0 8px var(--cyan);
     }
     #startButton {
-      background-color: #4caf50;
-      color: white;
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 5px #178c3d;
     }
     #restartButton {
-      background-color: #f44336;
-      color: white;
+      background: var(--orange);
+      color: #fff;
+      box-shadow: 0 5px #b5560e;
     }
-    #musicToggle {
+    #shareBtn {
+      background: var(--purple);
+      color: #fff;
+      box-shadow: 0 5px #3f46c1;
+    }
+    #themeToggle {
       position: fixed;
-      top: 10px;
-      left: 10px;
-      background: #ff9800;
+      top: 12px;
+      right: 12px;
+      padding: 10px 15px;
+      font-size: 0.9em;
+      background: var(--purple);
+      color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 3px #3f46c1;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.4s;
+      z-index: 100;
+    }
+    #themeToggle:hover {
+      background: #4f51c9;
+    }
+    .hidden {
+      display: none !important;
+    }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    @keyframes bounce {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+    #score {
+      font-size: 2.2em;
+      margin-top: 20px;
+      min-height: 40px;
+      transition: transform 0.15s;
+    }
+    .bounce {
+      animation: bounce 0.2s;
+    }
+    #progressBarContainer {
+      width: 80%;
+      height: 20px;
+      background: #333;
+      margin: 20px auto;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: inset 0 0 5px #000;
+      transition: background 0.4s;
+    }
+    body.light #progressBarContainer {
+      background: #ddd;
+      box-shadow: inset 0 0 5px #aaa;
+    }
+    #progressBar {
+      width: 100%;
+      height: 100%;
+      background: var(--blue);
+      transition: width 1s linear, background 0.4s;
+    }
+    body.light #progressBar {
+      background: var(--purple);
+    }
+    #powerUp {
+      font-size: 1.3em;
+      margin-top: 10px;
+      color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan);
+      animation: pulse 1s infinite;
+      min-height: 24px;
+      transition: color 0.4s;
+    }
+    body.light #powerUp {
+      color: #0ec0b6;
+      text-shadow: 0 0 10px #0ec0b6;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .confetti-piece {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: #f97316;
+      opacity: 0.9;
+      pointer-events: none;
+      animation-name: fall, spin;
+      animation-duration: 3s, 1.5s;
+      animation-iteration-count: 1, infinite;
+      animation-timing-function: linear, linear;
+      border-radius: 3px;
+      z-index: 9999;
+    }
+    @keyframes fall {
+      0% {transform: translateY(-10px);}
+      100% {transform: translateY(100vh);}
+    }
+    @keyframes spin {
+      0% {transform: rotate(0deg);}
+      100% {transform: rotate(360deg);}
     }
   </style>
 </head>
 <body>
-  <button id="musicToggle">🔊 Music On</button>
-  <h1>🔥 Tap Dash</h1>
-  <div id="countdown">Click Start to Begin</div>
-  <button id="startButton">Start Game</button>
-  <button id="tapButton" class="hidden">TAP!</button>
-  <div id="score" class="hidden">Score: 0</div>
-  <div id="highScoreDisplay"></div>
-  <button id="restartButton" class="hidden">Play Again</button>
 
-  <!-- Background Music -->
-  <audio id="bgMusic" loop>
-    <source src="https://cdn.pixabay.com/audio/2022/03/11/audio_d20ad74770.mp3" type="audio/mp3" />
-  </audio>
+  <button id="themeToggle">🌙 Dark Mode</button>
+
+  <h1>🔥 TAP WARS</h1>
+  <div id="game">
+    <div id="countdown">Click Start to Begin</div>
+    <div id="progressBarContainer" class="hidden">
+      <div id="progressBar"></div>
+    </div>
+
+    <div id="powerUp" class="hidden">⚡ DOUBLE POINTS!</div>
+
+    <button id="startButton">Start Game</button>
+    <button id="tapButton" class="hidden">TAP!</button>
+    <div id="score" class="hidden">Score: 0</div>
+    <div id="highScoreDisplay" class="hidden" style="margin-top:10px; font-size:1.1em; color:#facc15; min-height:24px;"></div>
+    <button id="restartButton" class="hidden">Play Again</button>
+    <button id="shareBtn" class="hidden">Share Score</button>
+  </div>
+
+  <!-- Sounds -->
+  <audio id="tapSound" src="https://freesound.org/data/previews/256/256113_3263906-lq.mp3"></audio>
+  <audio id="powerSound" src="https://freesound.org/data/previews/331/331912_3248244-lq.mp3"></audio>
+  <audio id="endSound" src="https://freesound.org/data/previews/171/171497_2398400-lq.mp3"></audio>
+  <audio id="comboSound" src="https://freesound.org/data/previews/66/66717_634166-lq.mp3"></audio>
 
   <script>
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+    const countdown = document.getElementById('countdown');
     const startButton = document.getElementById('startButton');
     const tapButton = document.getElementById('tapButton');
-    const restartButton = document.getElementById('restartButton');
-    const countdown = document.getElementById('countdown');
     const scoreDisplay = document.getElementById('score');
+    const restartButton = document.getElementById('restartButton');
+    const shareBtn = document.getElementById('shareBtn');
+    const tapSound = document.getElementById('tapSound');
+    const powerSound = document.getElementById('powerSound');
+    const endSound = document.getElementById('endSound');
+    const comboSound = document.getElementById('comboSound');
+    const progressBar = document.getElementById('progressBar');
+    const progressContainer = document.getElementById('progressBarContainer');
+    const powerUp = document.getElementById('powerUp');
     const highScoreDisplay = document.getElementById('highScoreDisplay');
-    const musicToggle = document.getElementById('musicToggle');
-    const bgMusic = document.getElementById('bgMusic');
 
     let score = 0;
-    let timeLeft = 15;
+    let timeLeft = 10;
     let interval;
-    let moveInterval;
-    let musicOn = true;
-    let highScore = localStorage.getItem('tapDashHighScore') || 0;
+    let doublePoints = false;
+    let lastTapTime = 0;
+    let comboCount = 0;
+    let highScore = localStorage.getItem('tapWarsHighScore') || 0;
 
-    function moveTapButton() {
-      const x = Math.random() * (window.innerWidth - 100);
-      const y = Math.random() * (window.innerHeight - 100);
-      tapButton.style.left = `${x}px`;
-      tapButton.style.top = `${y}px`;
+    if (highScore > 0) {
+      highScoreDisplay.textContent = `🏆 High Score: ${highScore}`;
+      highScoreDisplay.classList.remove('hidden');
     }
 
     function startGame() {
+      themeToggle.classList.add('hidden'); // Hide theme toggle
       score = 0;
-      timeLeft = 15;
+      timeLeft = 10;
       scoreDisplay.textContent = 'Score: 0';
-      scoreDisplay.classList.remove('hidden');
-      tapButton.classList.remove('hidden');
+      countdown.textContent = 'Time: 10s';
+      progressBar.style.width = '100%';
+
       startButton.classList.add('hidden');
+      tapButton.classList.remove('hidden');
+      scoreDisplay.classList.remove('hidden');
       restartButton.classList.add('hidden');
-      countdown.textContent = `Time: ${timeLeft}s`;
-      moveTapButton();
+      shareBtn.classList.add('hidden');
+      progressContainer.classList.remove('hidden');
+      powerUp.classList.add('hidden');
+      highScoreDisplay.classList.add('hidden');
+      doublePoints = false;
+      tapButton.classList.remove('double');
+      comboCount = 0;
+
       interval = setInterval(() => {
         timeLeft--;
-        countdown.textContent = `Time: ${timeLeft}s`;
-        if (timeLeft <= 0) endGame();
+        countdown.textContent = 'Time: ' + timeLeft + 's';
+        progressBar.style.width = (timeLeft * 10) + '%';
+
+        if (timeLeft === 5 || timeLeft === 2) {
+          activatePowerUp();
+        }
+
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          endGame();
+        }
       }, 1000);
-      moveInterval = setInterval(moveTapButton, 1000);
-      if (musicOn) {
-        bgMusic.play().catch(() => {}); // silent fail if autoplay blocked
-      }
+    }
+
+    function activatePowerUp() {
+      doublePoints = true;
+      powerUp.classList.remove('hidden');
+      powerSound.currentTime = 0;
+      powerSound.play();
+      tapButton.classList.add('double');
+
+      setTimeout(() => {
+        doublePoints = false;
+        powerUp.classList.add('hidden');
+        tapButton.classList.remove('double');
+      }, 3000);
     }
 
     function tap() {
-      score++;
-      scoreDisplay.textContent = `Score: ${score}`;
+      let now = Date.now();
+      if (now - lastTapTime <= 400) {
+        comboCount++;
+        if (comboCount >= 3) {
+          score += 2;
+          comboSound.currentTime = 0;
+          comboSound.play();
+        } else {
+          score += doublePoints ? 2 : 1;
+        }
+      } else {
+        comboCount = 1;
+        score += doublePoints ? 2 : 1;
+      }
+      lastTapTime = now;
+      scoreDisplay.textContent = 'Score: ' + score;
+      scoreDisplay.classList.add('bounce');
+      tapSound.currentTime = 0;
+      tapSound.play();
+      setTimeout(() => {
+        scoreDisplay.classList.remove('bounce');
+      }, 150);
     }
 
     function endGame() {
-      clearInterval(interval);
-      clearInterval(moveInterval);
+      countdown.textContent = 'Time\'s Up!';
+      endSound.play();
       tapButton.classList.add('hidden');
       restartButton.classList.remove('hidden');
-      countdown.textContent = 'Game Over!';
+      shareBtn.classList.remove('hidden');
+      progressContainer.classList.add('hidden');
+      powerUp.classList.add('hidden');
+      highScoreDisplay.classList.remove('hidden');
+      themeToggle.classList.remove('hidden'); // Show toggle again
+
       if (score > highScore) {
         highScore = score;
-        localStorage.setItem('tapDashHighScore', score);
-        highScoreDisplay.textContent = `🏆 New High Score: ${score}`;
+        localStorage.setItem('tapWarsHighScore', score);
+        highScoreDisplay.textContent = `🏆 New High Score: ${score}!`;
       } else {
-        highScoreDisplay.textContent = `High Score: ${highScore}`;
+        highScoreDisplay.textContent = `🏆 High Score: ${highScore}`;
       }
-      bgMusic.pause();
-      bgMusic.currentTime = 0;
+
+      launchConfetti();
     }
 
-    function toggleMusic() {
-      musicOn = !musicOn;
-      musicToggle.textContent = musicOn ? '🔊 Music On' : '🔇 Music Off';
-      if (!musicOn) {
-        bgMusic.pause();
-        bgMusic.currentTime = 0;
-      } else if (timeLeft > 0) {
-        bgMusic.play().catch(() => {});
+    function launchConfetti() {
+      for (let i = 0; i < 30; i++) {
+        let confetti = document.createElement("div");
+        confetti.classList.add("confetti-piece");
+        confetti.style.left = Math.random() * 100 + "vw";
+        confetti.style.background = `hsl(${Math.random() * 360}, 100%, 60%)`;
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 3000);
       }
     }
+
+    function shareScore() {
+      const shareText = `I scored ${score} in TAP WARS! 🔥 Try to beat me!`;
+      if (navigator.share) {
+        navigator.share({ title: 'TAP WARS', text: shareText, url: window.location.href });
+      } else {
+        prompt("Copy this to share your score:", shareText);
+      }
+    }
+
+    if (localStorage.getItem('tapWarsTheme') === 'light') {
+      body.classList.add('light');
+      themeToggle.textContent = '🌞 Light Mode';
+    }
+
+    themeToggle.addEventListener('click', () => {
+      body.classList.toggle('light');
+      const mode = body.classList.contains('light') ? 'light' : 'dark';
+      themeToggle.textContent = mode === 'light' ? '🌞 Light Mode' : '🌙 Dark Mode';
+      localStorage.setItem('tapWarsTheme', mode);
+    });
 
     startButton.addEventListener('click', startGame);
     restartButton.addEventListener('click', startGame);
     tapButton.addEventListener('click', tap);
-    musicToggle.addEventListener('click', toggleMusic);
+    shareBtn.addEventListener('click', shareScore);
   </script>
 </body>
 </html>
