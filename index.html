@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>🔥 TAP WARS</title>
+  <title>🔥 SLASH WARS</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -19,6 +19,7 @@
       --cyan: #00ffcc;
       --cyan-dark: #009f89;
       --gold: #ffd700;
+      --red: #ff6f61;
       --gradient: linear-gradient(135deg, #1f8ef1, #6366f1, #f97316, #ff6f61);
     }
     * {
@@ -36,7 +37,7 @@
       user-select: none;
       overflow: hidden;
       min-height: 100vh;
-      touch-action: manipulation;
+      touch-action: none; /* Prevents browser zoom/pan */
     }
     body.light {
       background: var(--bg-light);
@@ -89,7 +90,7 @@
       z-index: 10;
       font-weight: 600;
     }
-    #tapButton {
+    #slashButton {
       background: var(--blue);
       color: #fff;
       box-shadow: 0 8px var(--blue-dark), 0 0 15px var(--blue);
@@ -97,22 +98,22 @@
       height: clamp(80px, 20vw, 120px);
       font-size: clamp(1.2em, 5vw, 1.5em);
     }
-    #tapButton:active {
+    #slashButton:active {
       animation: pop 0.2s ease-in-out;
       background: var(--orange);
       box-shadow: 0 4px #aa3e17;
       transform: translateY(4px);
     }
-    #tapButton.double {
+    #slashButton.double {
       background: var(--cyan);
       box-shadow: 0 8px var(--cyan-dark), 0 0 20px var(--cyan);
       text-shadow: 0 0 8px var(--cyan);
     }
-    body.light #tapButton {
+    body.light #slashButton {
       background: var(--purple);
       box-shadow: 0 8px #4b47a5, 0 0 15px var(--purple);
     }
-    body.light #tapButton.double {
+    body.light #slashButton.double {
       background: var(--cyan);
       box-shadow: 0 8px var(--cyan-dark), 0 0 20px var(--cyan);
     }
@@ -219,33 +220,46 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.7; }
     }
-    .ripple {
+    .slash-trail {
       position: fixed;
-      width: 20px;
+      width: 2px;
       height: 20px;
-      background: transparent;
-      border: 3px solid var(--cyan);
-      border-radius: 50%;
-      animation: rippleEffect 0.5s ease-out;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
       pointer-events: none;
       z-index: 5;
+      animation: fadeOut 0.3s ease-out;
     }
-    @keyframes rippleEffect {
-      0% { transform: scale(1); opacity: 1; }
-      100% { transform: scale(4); opacity: 0; }
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
     }
-    .target {
+    .object {
       position: absolute;
       width: clamp(40px, 10vw, 60px);
       height: clamp(40px, 10vw, 60px);
-      background: var(--blue);
       border-radius: 50%;
       cursor: pointer;
       z-index: 8;
       transition: transform 0.2s;
-      box-shadow: 0 0 15px var(--blue), 0 0 25px rgba(31, 142, 241, 0.5);
     }
-    .target.gold {
+    .object.glass {
+      background: linear-gradient(135deg, #b0e0e6, #87ceeb);
+      box-shadow: 0 0 15px #87ceeb, 0 0 25px rgba(135, 206, 235, 0.5);
+    }
+    .object.apple {
+      background: radial-gradient(circle, #ff4d4d, #cc0000);
+      box-shadow: 0 0 15px #cc0000;
+    }
+    .object.wood {
+      background: linear-gradient(135deg, #8b5c2c, #5c4033);
+      box-shadow: 0 0 15px #5c4033;
+    }
+    .object.metal {
+      background: linear-gradient(135deg, #c0c0c0, #808080);
+      box-shadow: 0 0 15px #808080;
+    }
+    .object.gold {
       background: var(--gold);
       box-shadow: 0 0 20px var(--gold), 0 0 30px rgba(255, 215, 0, 0.7);
       animation: glow 1.5s infinite;
@@ -254,7 +268,7 @@
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.1); }
     }
-    .target:hover {
+    .object:hover {
       transform: scale(1.15);
     }
     #gameOver {
@@ -343,16 +357,16 @@
 </head>
 <body>
   <button id="themeToggle">🌙 Dark Mode</button>
-  <h1>🔥 TAP WARS</h1>
+  <h1>🔥 SLASH WARS</h1>
   <div id="game">
-    <div id="countdown">Tap Start to Begin</div>
+    <div id="countdown">Swipe to Start!</div>
     <div id="progressBarContainer" class="hidden">
       <div id="progressBar"></div>
     </div>
     <div id="powerUp" class="hidden">⚡ DOUBLE POINTS!</div>
     <div id="score" class="hidden">Score: 0</div>
     <div id="comboDisplay" class="hidden">Combo: x1</div>
-    <button id="tapButton" class="hidden">TAP!</button>
+    <button id="slashButton" class="hidden">SLASH!</button>
     <div id="highScoreDisplay" class="hidden" style="margin-top:10px; font-size:1.1em; color:#facc15; min-height:24px;"></div>
     <button id="startButton">Start Game</button>
     <button id="restartButton" class="hidden">Play Again</button>
@@ -370,11 +384,13 @@
   </div>
   <canvas id="particleCanvas"></canvas>
 
-  <!-- Sounds (all from Freesound, CC0 or CC BY) -->
-  <audio id="tapSound" src="https://freesound.org/data/previews/614/614167_11861866-lq.mp3"></audio>
+  <!-- Sounds (all CC0 from Freesound) -->
+  <audio id="glassSound" src="https://freesound.org/data/previews/686/686556_14109920-lq.mp3"></audio>
+  <audio id="appleSound" src="https://freesound.org/data/previews/171/171625_2437722-lq.mp3"></audio>
+  <audio id="woodSound" src="https://freesound.org/data/previews/189/189335_3519420-lq.mp3"></audio>
+  <audio id="metalSound" src="https://freesound.org/data/previews/165/165496_711360-lq.mp3"></audio>
   <audio id="powerSound" src="https://freesound.org/data/previews/331/331912_3248244-lq.mp3"></audio>
   <audio id="endSound" src="https://freesound.org/data/previews/171/171497_2398400-lq.mp3"></audio>
-  <audio id="targetSound" src="https://freesound.org/data/previews/66/66717_634166-lq.mp3"></audio>
 
   <script>
     const body = document.body;
@@ -382,16 +398,18 @@
     const themeToggle = document.getElementById('themeToggle');
     const countdown = document.getElementById('countdown');
     const startButton = document.getElementById('startButton');
-    const tapButton = document.getElementById('tapButton');
+    const slashButton = document.getElementById('slashButton');
     const scoreDisplay = document.getElementById('score');
     const comboDisplay = document.getElementById('comboDisplay');
     const restartButton = document.getElementById('restartButton');
     const shareBtn = document.getElementById('shareBtn');
     const playAgainBtn = document.getElementById('playAgainBtn');
-    const tapSound = document.getElementById('tapSound');
+    const glassSound = document.getElementById('glassSound');
+    const appleSound = document.getElementById('appleSound');
+    const woodSound = document.getElementById('woodSound');
+    const metalSound = document.getElementById('metalSound');
     const powerSound = document.getElementById('powerSound');
     const endSound = document.getElementById('endSound');
-    const targetSound = document.getElementById('targetSound');
     const progressBar = document.getElementById('progressBar');
     const progressContainer = document.getElementById('progressBarContainer');
     const powerUp = document.getElementById('powerUp');
@@ -408,13 +426,16 @@
     let timeLeft = 10;
     let interval;
     let doublePoints = false;
-    let lastTapTime = 0;
+    let lastSlashTime = 0;
     let comboCount = 0;
-    let highScore = parseInt(localStorage.getItem('tapWarsHighScore') || 0);
-    let leaderboardScores = JSON.parse(localStorage.getItem('tapWarsLeaderboard') || '[]');
-    let targets = [];
+    let highScore = parseInt(localStorage.getItem('slashWarsHighScore') || 0);
+    let leaderboardScores = JSON.parse(localStorage.getItem('slashWarsLeaderboard') || '[]');
+    let objects = [];
     let particles = [];
+    let slashTrail = [];
     let isMobile = 'ontouchstart' in window;
+    let isSlashing = false;
+    let lastTouch = null;
 
     // Canvas setup
     canvas.width = window.innerWidth;
@@ -444,6 +465,19 @@
 
     function updateParticles() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Draw slash trail
+      slashTrail.forEach((point, index) => {
+        if (point.life <= 0) return;
+        ctx.beginPath();
+        ctx.moveTo(point.x1, point.y1);
+        ctx.lineTo(point.x2, point.y2);
+        ctx.strokeStyle = `hsla(180, 100%, 60%, ${point.life})`;
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        point.life -= 0.05;
+      });
+      slashTrail = slashTrail.filter(p => p.life > 0);
+      // Draw particles
       particles = particles.filter(p => p.life > 0);
       particles.forEach(p => {
         p.x += p.vx;
@@ -455,7 +489,7 @@
         ctx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${p.alpha})`;
         ctx.fill();
       });
-      if (particles.length > 0) requestAnimationFrame(updateParticles);
+      if (particles.length > 0 || slashTrail.length > 0) requestAnimationFrame(updateParticles);
     }
 
     // Initialize leaderboard
@@ -477,13 +511,14 @@
       comboDisplay.textContent = 'Combo: x1';
       countdown.textContent = 'Time: 10s';
       progressBar.style.width = '100%';
-      targets.forEach(target => target.element.remove());
-      targets = [];
+      objects.forEach(obj => obj.element.remove());
+      objects = [];
       particles = [];
+      slashTrail = [];
       gameOver.classList.remove('show');
 
       startButton.classList.add('hidden');
-      tapButton.classList.toggle('hidden', isMobile);
+      slashButton.classList.toggle('hidden', isMobile);
       scoreDisplay.classList.remove('hidden');
       comboDisplay.classList.remove('hidden');
       restartButton.classList.add('hidden');
@@ -492,7 +527,7 @@
       powerUp.classList.add('hidden');
       leaderboard.classList.add('hidden');
       doublePoints = false;
-      tapButton.classList.remove('double');
+      slashButton.classList.remove('double');
 
       interval = setInterval(() => {
         timeLeft -= 0.1;
@@ -503,19 +538,19 @@
           activatePowerUp();
         }
 
-        if (Math.random() < 0.03 && targets.length < 5) {
-          spawnTarget();
+        if (Math.random() < 0.04 && objects.length < 5) {
+          spawnObject();
         }
 
-        targets.forEach(target => {
-          target.x += target.vx;
-          target.y += target.vy;
-          target.element.style.left = `${target.x}px`;
-          target.element.style.top = `${target.y}px`;
+        objects.forEach(obj => {
+          obj.x += obj.vx;
+          obj.y += obj.vy;
+          obj.element.style.left = `${obj.x}px`;
+          obj.element.style.top = `${obj.y}px`;
 
-          if (target.x < -50 || target.x > window.innerWidth + 50 || target.y < -50 || target.y > window.innerHeight + 50) {
-            target.element.remove();
-            targets = targets.filter(t => t !== target);
+          if (obj.x < -50 || obj.x > window.innerWidth + 50 || obj.y < -50 || obj.y > window.innerHeight + 50) {
+            obj.element.remove();
+            objects = objects.filter(o => o !== obj);
             timeLeft = Math.max(0, timeLeft - 0.1);
           }
         });
@@ -529,50 +564,62 @@
       requestAnimationFrame(updateParticles);
     }
 
-    function spawnTarget() {
-      const target = document.createElement('div');
-      target.classList.add('target');
-      if (Math.random() < 0.2) target.classList.add('gold');
-      const isGold = target.classList.contains('gold');
+    function spawnObject() {
+      const types = ['glass', 'apple', 'wood', 'metal', 'gold'];
+      const type = types[Math.floor(Math.random() * types.length)];
+      const isGold = type === 'gold';
+      const object = document.createElement('div');
+      object.classList.add('object', type);
       const size = clamp(40, 10 * window.innerWidth / 100, 60);
-      target.style.width = `${size}px`;
-      target.style.height = `${size}px`;
+      object.style.width = `${size}px`;
+      object.style.height = `${size}px`;
 
       const x = Math.random() * (window.innerWidth - size);
       const y = Math.random() * (window.innerHeight - size - 100) + 50;
       const angle = Math.random() * 2 * Math.PI;
-      const speed = clamp(2, window.innerWidth / 400, 4);
+      const speed = clamp(2, window.innerWidth / 400, 5);
       const vx = Math.cos(angle) * speed;
       const vy = Math.sin(angle) * speed;
 
-      target.style.left = `${x}px`;
-      target.style.top = `${y}px`;
-      gameArea.appendChild(target);
+      object.style.left = `${x}px`;
+      object.style.top = `${y}px`;
+      gameArea.appendChild(object);
 
-      targets.push({ element: target, x, y, vx, vy, isGold });
-
-      target.addEventListener('click', () => destroyTarget(target, isGold));
-      target.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        destroyTarget(target, isGold);
-      });
+      objects.push({ element: object, x, y, vx, vy, type, size });
     }
 
-    function destroyTarget(target, isGold) {
-      const index = targets.findIndex(t => t.element === target);
-      if (index !== -1) {
-        const { x, y } = targets[index];
-        targets.splice(index, 1);
-        target.remove();
-        const points = isGold ? 20 : (doublePoints ? 10 : 5);
-        score += points;
-        scoreDisplay.textContent = `Score: ${score}`;
-        scoreDisplay.classList.add('bounce');
-        targetSound.currentTime = 0;
-        targetSound.play();
-        createParticles(x + size / 2, y + size / 2, 15, isGold ? 51 : 200);
-        setTimeout(() => scoreDisplay.classList.remove('bounce'), 150);
-      }
+    function slashObject(x, y) {
+      objects.forEach(obj => {
+        const dx = x - (obj.x + obj.size / 2);
+        const dy = y - (obj.y + obj.size / 2);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < obj.size / 2 + 10) {
+          const points = obj.type === 'gold' ? 20 : (doublePoints ? 10 : 5);
+          score += points;
+          scoreDisplay.textContent = `Score: ${score}`;
+          scoreDisplay.classList.add('bounce');
+          const sound = {
+            glass: glassSound,
+            apple: appleSound,
+            wood: woodSound,
+            metal: metalSound,
+            gold: glassSound
+          }[obj.type];
+          sound.currentTime = 0;
+          sound.volume = 0.7;
+          sound.play();
+          createParticles(obj.x + obj.size / 2, obj.y + obj.size / 2, 15, {
+            glass: 180,
+            apple: 0,
+            wood: 30,
+            metal: 200,
+            gold: 51
+          }[obj.type]);
+          obj.element.remove();
+          objects = objects.filter(o => o !== obj);
+          setTimeout(() => scoreDisplay.classList.remove('bounce'), 150);
+        }
+      });
     }
 
     function activatePowerUp() {
@@ -581,43 +628,45 @@
         powerUp.classList.remove('hidden');
         powerSound.currentTime = 0;
         powerSound.play();
-        tapButton.classList.add('double');
+        slashButton.classList.add('double');
 
         setTimeout(() => {
           doublePoints = false;
           powerUp.classList.add('hidden');
-          tapButton.classList.remove('double');
+          slashButton.classList.remove('double');
         }, 3000);
       }
     }
 
-    function tap(e) {
-      if (e.target.tagName === 'BUTTON' && e.target !== tapButton) return;
+    function slash(e) {
+      if (e.target.tagName === 'BUTTON' && e.target !== slashButton) return;
       let x = e.clientX || e.touches[0].clientX;
       let y = e.clientY || e.touches[0].clientY;
       let now = Date.now();
       let points = 1;
-      if (now - lastTapTime <= 400) {
+      if (now - lastSlashTime <= 400) {
         comboCount++;
         if (comboCount >= 3) {
           points = comboCount;
-          targetSound.currentTime = 0;
-          targetSound.play();
+          glassSound.currentTime = 0;
+          glassSound.volume = 0.7;
+          glassSound.play();
         }
       } else {
         comboCount = 1;
       }
       points = doublePoints ? points * 2 : points;
       score += points;
-      lastTapTime = now;
+      lastSlashTime = now;
       scoreDisplay.textContent = `Score: ${score}`;
       comboDisplay.textContent = `Combo: x${comboCount}`;
       scoreDisplay.classList.add('bounce');
-      tapSound.currentTime = 0;
-      tapSound.volume = 0.7;
-      tapSound.play();
       createParticles(x, y, 8);
-      if (isMobile) createRipple(x, y);
+      if (isMobile && lastTouch) {
+        slashTrail.push({ x1: lastTouch.x, y1: lastTouch.y, x2: x, y2: y, life: 1 });
+        slashObject(x, y);
+      }
+      lastTouch = { x, y };
 
       if (navigator.vibrate) {
         navigator.vibrate(50);
@@ -626,19 +675,22 @@
       setTimeout(() => scoreDisplay.classList.remove('bounce'), 150);
     }
 
-    function createRipple(x, y) {
-      let ripple = document.createElement('div');
-      ripple.classList.add('ripple');
-      ripple.style.left = `${x - 10}px`;
-      ripple.style.top = `${y - 10}px`;
-      document.body.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 500);
+    function handleTouchMove(e) {
+      e.preventDefault();
+      if (!isSlashing) return;
+      let x = e.touches[0].clientX;
+      let y = e.touches[0].clientY;
+      if (lastTouch) {
+        slashTrail.push({ x1: lastTouch.x, y1: lastTouch.y, x2: x, y2: y, life: 1 });
+        slashObject(x, y);
+      }
+      lastTouch = { x, y };
     }
 
     function endGame() {
       countdown.textContent = "Time's Up!";
       endSound.play();
-      tapButton.classList.add('hidden');
+      slashButton.classList.add('hidden');
       restartButton.classList.add('hidden');
       shareBtn.classList.add('hidden');
       progressContainer.classList.add('hidden');
@@ -647,12 +699,12 @@
       highScoreDisplay.classList.add('hidden');
       leaderboard.classList.add('hidden');
       themeToggle.classList.remove('hidden');
-      targets.forEach(target => target.element.remove());
-      targets = [];
+      objects.forEach(obj => obj.element.remove());
+      objects = [];
 
       if (score > highScore) {
         highScore = score;
-        localStorage.setItem('tapWarsHighScore', score);
+        localStorage.setItem('slashWarsHighScore', score);
         finalHighScore.textContent = `🏆 New High Score: ${score}!`;
       } else {
         finalHighScore.textContent = `🏆 High Score: ${highScore}`;
@@ -664,6 +716,10 @@
     }
 
     function updateLeaderboard() {
+      leaderboardScores.push({ score, date: new Date().toLocaleString() });
+      leaderboardScores.sort((a, b) => b.score - a.score);
+      leaderboardScores = leaderboardScores.slice(0, 5);
+      localStorage.setItem('slashWarsLeaderboard', JSON.stringify(leaderboardScores));
       leaderboardList.innerHTML = '';
       leaderboardScores.forEach((entry, index) => {
         let li = document.createElement('li');
@@ -673,9 +729,9 @@
     }
 
     function shareScore() {
-      const shareText = `I scored ${score} in TAP WARS with a x${comboCount} combo! 🔥 Beat me! ${window.location.href}`;
+      const shareText = `I scored ${score} in SLASH WARS with a x${comboCount} combo! 🔥 Beat me! ${window.location.href}`;
       if (navigator.share) {
-        navigator.share({ title: 'TAP WARS', text: shareText, url: window.location.href });
+        navigator.share({ title: 'SLASH WARS', text: shareText, url: window.location.href });
       } else {
         prompt('Copy this to share your score:', shareText);
       }
@@ -686,7 +742,7 @@
     }
 
     // Theme handling
-    if (localStorage.getItem('tapWarsTheme') === 'light') {
+    if (localStorage.getItem('slashWarsTheme') === 'light') {
       body.classList.add('light');
       themeToggle.textContent = '🌞 Light Mode';
     }
@@ -695,7 +751,7 @@
       body.classList.toggle('light');
       const mode = body.classList.contains('light') ? 'light' : 'dark';
       themeToggle.textContent = mode === 'light' ? '🌞 Light Mode' : '🌙 Dark Mode';
-      localStorage.setItem('tapWarsTheme', mode);
+      localStorage.setItem('slashWarsTheme', mode);
     });
 
     // Event listeners
@@ -703,16 +759,34 @@
     restartButton.addEventListener('click', startGame);
     playAgainBtn.addEventListener('click', startGame);
     shareBtn.addEventListener('click', shareScore);
-    tapButton.addEventListener('click', tap);
+    slashButton.addEventListener('click', slash);
     if (isMobile) {
       gameArea.addEventListener('touchstart', (e) => {
-        if (!tapButton.classList.contains('hidden') && e.target === gameArea) {
+        if (!slashButton.classList.contains('hidden') && e.target === gameArea) {
           e.preventDefault();
-          tap(e);
+          isSlashing = true;
+          slash(e);
         }
       });
+      gameArea.addEventListener('touchmove', handleTouchMove);
+      gameArea.addEventListener('touchend', () => {
+        isSlashing = false;
+        lastTouch = null;
+      });
     } else {
-      tapButton.addEventListener('click', tap);
+      slashButton.addEventListener('click', slash);
+      gameArea.addEventListener('mousemove', (e) => {
+        if (e.buttons === 1) {
+          if (lastTouch) {
+            slashTrail.push({ x1: lastTouch.x, y1: lastTouch.y, x2: e.clientX, y2: e.clientY, life: 1 });
+            slashObject(e.clientX, e.clientY);
+          }
+          lastTouch = { x: e.clientX, y: e.clientY };
+        }
+      });
+      gameArea.addEventListener('mouseup', () => {
+        lastTouch = null;
+      });
     }
   </script>
 </body>
