@@ -1,240 +1,156 @@
-<!-- Save as index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🔥 TAP WARS</title>
+  <title>🔥 Tap Game</title>
   <style>
-    /* [ SAME STYLES AS BEFORE — trimmed for brevity ] */
-    #modeSelect {
-      margin-top: 10px;
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #111;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+    body.light {
+      background-color: #f0f0f0;
+      color: #111;
+    }
+    #themeToggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 10px 20px;
     }
     #musicToggle {
-      position: fixed;
-      top: 12px;
-      left: 12px;
-      padding: 10px 15px;
-      font-size: 0.9em;
-      background: var(--green);
-      color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 3px #178c3d;
-      z-index: 100;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 10px 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    button {
+      padding: 20px;
+      font-size: 1.2em;
+      margin: 10px;
       cursor: pointer;
+    }
+    #score {
+      font-size: 1.5em;
+      margin: 20px;
     }
   </style>
 </head>
 <body>
-  <button id="themeToggle">🌙 Dark Mode</button>
+  <button id="themeToggle">Toggle Theme</button>
   <button id="musicToggle">🔊 Music On</button>
 
-  <h1>🔥 TAP WARS</h1>
-  <div id="game">
-    <div id="countdown">Click Start to Begin</div>
-    <div id="modeSelect">
-      <label>
-        <input type="radio" name="mode" value="classic" checked />
-        Classic
-      </label>
-      <label>
-        <input type="radio" name="mode" value="sudden" />
-        Sudden Death ⚡
-      </label>
-    </div>
-    <div id="progressBarContainer" class="hidden">
-      <div id="progressBar"></div>
-    </div>
-    <div id="powerUp" class="hidden">⚡ DOUBLE POINTS!</div>
+  <h1>🔥 Tap Game</h1>
 
-    <button id="startButton">Start Game</button>
-    <button id="tapButton" class="hidden">TAP!</button>
-    <div id="score" class="hidden">Score: 0</div>
-    <div id="highScoreDisplay" class="hidden" style="margin-top:10px; font-size:1.1em; color:#facc15; min-height:24px;"></div>
-    <button id="restartButton" class="hidden">Play Again</button>
-    <button id="shareBtn" class="hidden">Share Score</button>
+  <div id="modeSelect">
+    <label><input type="radio" name="mode" value="classic" checked> Classic</label>
+    <label><input type="radio" name="mode" value="sudden"> Sudden Death</label>
   </div>
 
-  <!-- Sounds -->
-  <audio id="tapSound" src="https://freesound.org/data/previews/256/256113_3263906-lq.mp3"></audio>
-  <audio id="powerSound" src="https://freesound.org/data/previews/331/331912_3248244-lq.mp3"></audio>
-  <audio id="endSound" src="https://freesound.org/data/previews/171/171497_2398400-lq.mp3"></audio>
-  <audio id="comboSound" src="https://freesound.org/data/previews/66/66717_634166-lq.mp3"></audio>
+  <div id="countdown">Click Start to Begin</div>
+  <button id="startButton">Start Game</button>
+  <button id="tapButton" class="hidden">TAP!</button>
+  <div id="score" class="hidden">Score: 0</div>
+  <div id="highScoreDisplay"></div>
+  <button id="restartButton" class="hidden">Play Again</button>
+
   <audio id="bgMusic" src="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Scott_Holmes/Arcade_Mode/Scott_Holmes_-_Arcade_Dreams.mp3" loop></audio>
 
   <script>
-    // [ DOM SELECTION ]
-    const body = document.body;
     const themeToggle = document.getElementById('themeToggle');
     const musicToggle = document.getElementById('musicToggle');
-    const countdown = document.getElementById('countdown');
     const startButton = document.getElementById('startButton');
     const tapButton = document.getElementById('tapButton');
-    const scoreDisplay = document.getElementById('score');
     const restartButton = document.getElementById('restartButton');
-    const shareBtn = document.getElementById('shareBtn');
-    const tapSound = document.getElementById('tapSound');
-    const powerSound = document.getElementById('powerSound');
-    const endSound = document.getElementById('endSound');
-    const comboSound = document.getElementById('comboSound');
-    const bgMusic = document.getElementById('bgMusic');
-    const progressBar = document.getElementById('progressBar');
-    const progressContainer = document.getElementById('progressBarContainer');
-    const powerUp = document.getElementById('powerUp');
+    const countdown = document.getElementById('countdown');
+    const scoreDisplay = document.getElementById('score');
     const highScoreDisplay = document.getElementById('highScoreDisplay');
+    const bgMusic = document.getElementById('bgMusic');
+    const modeSelect = document.getElementById('modeSelect');
 
     let score = 0;
     let timeLeft = 10;
     let interval;
-    let doublePoints = false;
-    let lastTapTime = 0;
-    let comboCount = 0;
-    let highScore = localStorage.getItem('tapWarsHighScore') || 0;
-    let suddenDeath = false;
-    let missedTapTimer;
-
-    function updateHighScoreDisplay() {
-      highScoreDisplay.textContent = score > highScore
-        ? `🏆 New High Score: ${score}!`
-        : `🏆 High Score: ${highScore}`;
-      highScoreDisplay.classList.remove('hidden');
-    }
+    let highScore = localStorage.getItem('tapHighScore') || 0;
+    let musicPlaying = true;
 
     function startGame() {
-      // Setup
-      themeToggle.classList.add('hidden');
-      musicToggle.classList.add('hidden');
       score = 0;
       timeLeft = 10;
       countdown.textContent = 'Time: 10s';
-      progressBar.style.width = '100%';
       scoreDisplay.textContent = 'Score: 0';
       scoreDisplay.classList.remove('hidden');
       tapButton.classList.remove('hidden');
       startButton.classList.add('hidden');
       restartButton.classList.add('hidden');
-      shareBtn.classList.add('hidden');
-      progressContainer.classList.remove('hidden');
-      powerUp.classList.add('hidden');
-      highScoreDisplay.classList.add('hidden');
-      doublePoints = false;
-      tapButton.classList.remove('double');
-      comboCount = 0;
+      modeSelect.classList.add('hidden');
+      highScoreDisplay.textContent = '';
 
-      // Mode check
-      suddenDeath = document.querySelector('input[name="mode"]:checked').value === 'sudden';
+      if (musicPlaying) {
+        bgMusic.play();
+      }
 
-      bgMusic.play();
-
-      if (suddenDeath) {
-        countdown.textContent = 'Sudden Death!';
-        missedTapTimer = setTimeout(endGame, 1500);
-      } else {
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      if (mode === 'classic') {
         interval = setInterval(() => {
           timeLeft--;
-          countdown.textContent = 'Time: ' + timeLeft + 's';
-          progressBar.style.width = (timeLeft * 10) + '%';
-          if (timeLeft === 5 || timeLeft === 2) activatePowerUp();
+          countdown.textContent = `Time: ${timeLeft}s`;
           if (timeLeft <= 0) {
             clearInterval(interval);
             endGame();
           }
         }, 1000);
+      } else {
+        setTimeout(endGame, 10000); // sudden death ends after timeout
       }
     }
 
     function tap() {
-      let now = Date.now();
-      clearTimeout(missedTapTimer);
-
-      if (suddenDeath) {
-        score++;
-        countdown.textContent = `Sudden Death Score: ${score}`;
-        missedTapTimer = setTimeout(endGame, 1500);
-      } else {
-        if (now - lastTapTime <= 400) {
-          comboCount++;
-          score += comboCount >= 3 ? 2 : (doublePoints ? 2 : 1);
-          comboSound.play();
-        } else {
-          comboCount = 1;
-          score += doublePoints ? 2 : 1;
-        }
-        if (doublePoints) powerSound.play();
-      }
-
-      lastTapTime = now;
-      tapSound.play();
-      scoreDisplay.textContent = 'Score: ' + score;
-    }
-
-    function activatePowerUp() {
-      doublePoints = true;
-      powerUp.classList.remove('hidden');
-      tapButton.classList.add('double');
-      setTimeout(() => {
-        doublePoints = false;
-        powerUp.classList.add('hidden');
-        tapButton.classList.remove('double');
-      }, 3000);
+      score++;
+      scoreDisplay.textContent = `Score: ${score}`;
     }
 
     function endGame() {
-      clearInterval(interval);
-      clearTimeout(missedTapTimer);
-      tapButton.classList.add('hidden');
-      restartButton.classList.remove('hidden');
-      shareBtn.classList.remove('hidden');
-      progressContainer.classList.add('hidden');
-      powerUp.classList.add('hidden');
-      themeToggle.classList.remove('hidden');
-      musicToggle.classList.remove('hidden');
-      countdown.textContent = suddenDeath ? 'Sudden Death Over!' : 'Time\'s Up!';
-      endSound.play();
       bgMusic.pause();
       bgMusic.currentTime = 0;
+      countdown.textContent = 'Game Over!';
+      tapButton.classList.add('hidden');
+      restartButton.classList.remove('hidden');
+
       if (score > highScore) {
         highScore = score;
-        localStorage.setItem('tapWarsHighScore', score);
-      }
-      updateHighScoreDisplay();
-    }
-
-    function shareScore() {
-      const shareText = `I scored ${score} in TAP WARS! 🔥 Try to beat me!`;
-      if (navigator.share) {
-        navigator.share({ title: 'TAP WARS', text: shareText, url: window.location.href });
+        localStorage.setItem('tapHighScore', highScore);
+        highScoreDisplay.textContent = `🎉 New High Score: ${score}`;
       } else {
-        prompt("Copy this to share your score:", shareText);
+        highScoreDisplay.textContent = `High Score: ${highScore}`;
       }
     }
 
     themeToggle.addEventListener('click', () => {
-      body.classList.toggle('light');
-      const mode = body.classList.contains('light') ? 'light' : 'dark';
-      themeToggle.textContent = mode === 'light' ? '🌞 Light Mode' : '🌙 Dark Mode';
-      localStorage.setItem('tapWarsTheme', mode);
+      document.body.classList.toggle('light');
     });
 
     musicToggle.addEventListener('click', () => {
-      if (bgMusic.paused) {
-        bgMusic.play();
-        musicToggle.textContent = '🔊 Music On';
-      } else {
+      musicPlaying = !musicPlaying;
+      musicToggle.textContent = musicPlaying ? '🔊 Music On' : '🔇 Music Off';
+      if (!musicPlaying) {
         bgMusic.pause();
-        musicToggle.textContent = '🔇 Music Off';
+      } else {
+        bgMusic.play();
       }
     });
-
-    if (localStorage.getItem('tapWarsTheme') === 'light') {
-      body.classList.add('light');
-      themeToggle.textContent = '🌞 Light Mode';
-    }
 
     startButton.addEventListener('click', startGame);
     restartButton.addEventListener('click', startGame);
     tapButton.addEventListener('click', tap);
-    shareBtn.addEventListener('click', shareScore);
   </script>
 </body>
 </html>
