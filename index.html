@@ -1,119 +1,718 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tap Game</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>🔥 TAP WARS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #f0f0f0;
-      font-family: Arial, sans-serif;
+    :root {
+      --bg-light: #f5f5f5;
+      --text-light: #222;
+      --bg-dark: #1a1a2e;
+      --text-dark: #eee;
+      --blue: #1f8ef1;
+      --blue-dark: #1664b0;
+      --green: #22c55e;
+      --orange: #f97316;
+      --purple: #6366f1;
+      --cyan: #00ffcc;
+      --cyan-dark: #009f89;
+      --gold: #ffd700;
+      --gradient: linear-gradient(135deg, #1f8ef1, #6366f1, #f97316, #ff6f61);
     }
-    #gameArea {
-      width: 80vw;
-      height: 80vh;
-      max-width: 400px;
-      max-height: 600px;
-      background-color: #fff;
-      border: 2px solid #333;
-      position: relative;
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--gradient);
+      background-size: 300% 300%;
+      animation: gradientShift 10s ease infinite;
+      color: var(--text-dark);
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      user-select: none;
       overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      min-height: 100vh;
+      touch-action: manipulation;
+    }
+    body.light {
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    h1 {
+      margin: 20px 0;
+      font-size: clamp(2.5em, 8vw, 4em);
+      color: var(--orange);
+      text-shadow: 0 0 20px var(--orange), 0 0 30px rgba(249, 115, 22, 0.7);
+      font-weight: 700;
+      animation: pulseTitle 2s infinite;
+    }
+    body.light h1 {
+      color: var(--purple);
+      text-shadow: 0 0 20px var(--purple);
+    }
+    @keyframes pulseTitle {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    #game {
+      margin: 20px auto;
+      padding: 0 10px;
+      max-width: 600px;
+      position: relative;
+      min-height: 60vh;
+    }
+    #countdown {
+      font-size: clamp(1.2em, 5vw, 1.6em);
+      margin-bottom: 10px;
+      min-height: 28px;
+      font-weight: 700;
+      text-shadow: 0 0 5px var(--text-dark);
+    }
+    button {
+      padding: clamp(15px, 5vw, 20px) clamp(30px, 8vw, 40px);
+      font-size: clamp(1em, 4vw, 1.2em);
+      margin: 10px 5px;
+      cursor: pointer;
+      border: none;
+      border-radius: 12px;
+      transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+      position: relative;
+      z-index: 10;
+      font-weight: 600;
     }
     #tapButton {
-      width: 100px;
-      height: 100px;
-      background-color: #4CAF50;
-      border-radius: 50%;
-      cursor: pointer;
-      user-select: none;
-      transition: transform 0.1s;
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 8px var(--blue-dark), 0 0 15px var(--blue);
+      width: clamp(150px, 60vw, 300px);
+      height: clamp(80px, 20vw, 120px);
+      font-size: clamp(1.2em, 5vw, 1.5em);
     }
     #tapButton:active {
-      transform: scale(1.2);
+      animation: pop 0.2s ease-in-out;
+      background: var(--orange);
+      box-shadow: 0 4px #aa3e17;
+      transform: translateY(4px);
+    }
+    #tapButton.double {
+      background: var(--cyan);
+      box-shadow: 0 8px var(--cyan-dark), 0 0 20px var(--cyan);
+      text-shadow: 0 0 8px var(--cyan);
+    }
+    body.light #tapButton {
+      background: var(--purple);
+      box-shadow: 0 8px #4b47a5, 0 0 15px var(--purple);
+    }
+    body.light #tapButton.double {
+      background: var(--cyan);
+      box-shadow: 0 8px var(--cyan-dark), 0 0 20px var(--cyan);
+    }
+    #startButton, #restartButton, #shareBtn {
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 8px #178c3d;
+    }
+    #restartButton {
+      background: var(--orange);
+      box-shadow: 0 8px #b5560e;
+    }
+    #shareBtn {
+      background: var(--purple);
+      box-shadow: 0 8px #3f46c1;
+    }
+    #themeToggle {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      padding: 10px 15px;
+      font-size: 0.9em;
+      background: var(--purple);
+      color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px #3f46c1;
+      cursor: pointer;
+      transition: background 0.4s, transform 0.2s;
+      z-index: 100;
+    }
+    #themeToggle:hover {
+      background: #4f51c9;
+      transform: scale(1.1);
+    }
+    .hidden {
+      display: none !important;
+    }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    @keyframes bounce {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
     }
     #score {
+      font-size: clamp(1.8em, 6vw, 2.2em);
+      margin: 15px 0;
+      min-height: 40px;
+      font-weight: 700;
+      text-shadow: 0 0 10px var(--cyan);
+      transition: transform 0.15s;
+    }
+    #comboDisplay {
+      font-size: clamp(1em, 4vw, 1.3em);
+      color: var(--cyan);
+      text-shadow: 0 0 8px var(--cyan);
+      margin: 10px 0;
+      min-height: 24px;
+      font-weight: 600;
+    }
+    .bounce {
+      animation: bounce 0.2s;
+    }
+    #progressBarContainer {
+      width: 90%;
+      max-width: 400px;
+      height: 20px;
+      background: #333;
+      margin: 20px auto;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: inset 0 0 5px #000;
+      transition: background 0.4s;
+    }
+    body.light #progressBarContainer {
+      background: #ddd;
+      box-shadow: inset 0 0 5px #aaa;
+    }
+    #progressBar {
+      height: 100%;
+      background: var(--blue);
+      transition: width 0.1s linear, background 0.4s;
+    }
+    body.light #progressBar {
+      background: var(--purple);
+    }
+    #powerUp {
+      font-size: clamp(1em, 4vw, 1.3em);
+      margin: 10px 0;
+      color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan);
+      animation: pulse 1s infinite;
+      min-height: 24px;
+      font-weight: 600;
+    }
+    body.light #powerUp {
+      color: #0ec0b6;
+      text-shadow: 0 0 10px #0ec0b6;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .ripple {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      background: transparent;
+      border: 3px solid var(--cyan);
+      border-radius: 50%;
+      animation: rippleEffect 0.5s ease-out;
+      pointer-events: none;
+      z-index: 5;
+    }
+    @keyframes rippleEffect {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(4); opacity: 0; }
+    }
+    .target {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      font-size: 20px;
+      width: clamp(40px, 10vw, 60px);
+      height: clamp(40px, 10vw, 60px);
+      background: var(--blue);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 8;
+      transition: transform 0.2s;
+      box-shadow: 0 0 15px var(--blue), 0 0 25px rgba(31, 142, 241, 0.5);
+    }
+    .target.gold {
+      background: var(--gold);
+      box-shadow: 0 0 20px var(--gold), 0 0 30px rgba(255, 215, 0, 0.7);
+      animation: glow 1.5s infinite;
+    }
+    @keyframes glow {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    .target:hover {
+      transform: scale(1.15);
     }
     #gameOver {
-      position: absolute;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
       display: none;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background-color: rgba(0, 0, 0, 0.8);
-      color: white;
-      width: 100%;
-      height: 100%;
+      color: #fff;
+      z-index: 1000;
+      animation: fadeIn 0.5s ease-in;
+    }
+    #gameOver.show {
+      display: flex;
+    }
+    #gameOver h2 {
+      font-size: clamp(2em, 8vw, 3em);
+      color: var(--orange);
+      text-shadow: 0 0 15px var(--orange);
+      margin: 10px 0;
+    }
+    #gameOver p {
+      font-size: clamp(1.2em, 5vw, 1.5em);
+      margin: 10px 0;
+    }
+    #gameOver button {
+      font-size: clamp(1em, 4vw, 1.2em);
+      padding: 15px 30px;
+      background: var(--green);
+      box-shadow: 0 8px #178c3d;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    #leaderboard {
+      margin: 20px auto;
+      max-width: 400px;
+      font-size: clamp(0.9em, 3vw, 1em);
+      text-align: left;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 15px;
+      border-radius: 10px;
+      color: #fff;
+    }
+    body.light #leaderboard {
+      background: rgba(255, 255, 255, 0.4);
+      color: #333;
+    }
+    #leaderboard h3 {
+      margin: 0 0 10px;
+      font-size: 1.2em;
+    }
+    #leaderboard ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #leaderboard li {
+      padding: 5px 0;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    @media (max-width: 600px) {
+      #game {
+        padding: 0 5px;
+      }
+      h1 {
+        margin: 15px 0;
+      }
+      button {
+        margin: 8px 3px;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="gameArea">
-    <div id="tapButton"></div>
-    <div id="score">Score: 0</div>
-    <div id="gameOver">
-      <h1>Game Over</h1>
+  <button id="themeToggle">🌙 Dark Mode</button>
+  <h1>🔥 TAP WARS</h1>
+  <div id="game">
+    <div id="countdown">Tap Start to Begin</div>
+    <div id="progressBarContainer" class="hidden">
+      <div id="progressBar"></div>
+    </div>
+    <div id="powerUp" class="hidden">⚡ DOUBLE POINTS!</div>
+    <div id="score" class="hidden">Score: 0</div>
+    <div id="comboDisplay" class="hidden">Combo: x1</div>
+    <button id="tapButton" class="hidden">TAP!</button>
+    <div id="highScoreDisplay" class="hidden" style="margin-top:10px; font-size:1.1em; color:#facc15; min-height:24px;"></div>
+    <button id="startButton">Start Game</button>
+    <button id="restartButton" class="hidden">Play Again</button>
+    <button id="shareBtn" class="hidden">Share Score</button>
+    <div id="leaderboard" class="hidden">
+      <h3>🏆 Leaderboard</h3>
+      <ul id="leaderboardList"></ul>
+    </div>
+    <div id="gameOver" class="hidden">
+      <h2>Game Over!</h2>
       <p id="finalScore"></p>
-      <button onclick="restartGame()">Play Again</button>
+      <p id="finalHighScore"></p>
+      <button id="playAgainBtn">Play Again</button>
     </div>
   </div>
+  <canvas id="particleCanvas"></canvas>
+
+  <!-- Sounds (all from Freesound, CC0 or CC BY) -->
+  <audio id="tapSound" src="https://freesound.org/data/previews/614/614167_11861866-lq.mp3"></audio>
+  <audio id="powerSound" src="https://freesound.org/data/previews/331/331912_3248244-lq.mp3"></audio>
+  <audio id="endSound" src="https://freesound.org/data/previews/171/171497_2398400-lq.mp3"></audio>
+  <audio id="targetSound" src="https://freesound.org/data/previews/66/66717_634166-lq.mp3"></audio>
 
   <script>
+    const body = document.body;
+    const gameArea = document.getElementById('game');
+    const themeToggle = document.getElementById('themeToggle');
+    const countdown = document.getElementById('countdown');
+    const startButton = document.getElementById('startButton');
     const tapButton = document.getElementById('tapButton');
     const scoreDisplay = document.getElementById('score');
-    const gameOverScreen = document.getElementById('gameOver');
-    const finalScoreDisplay = document.getElementById('finalScore');
+    const comboDisplay = document.getElementById('comboDisplay');
+    const restartButton = document.getElementById('restartButton');
+    const shareBtn = document.getElementById('shareBtn');
+    const playAgainBtn = document.getElementById('playAgainBtn');
+    const tapSound = document.getElementById('tapSound');
+    const powerSound = document.getElementById('powerSound');
+    const endSound = document.getElementById('endSound');
+    const targetSound = document.getElementById('targetSound');
+    const progressBar = document.getElementById('progressBar');
+    const progressContainer = document.getElementById('progressBarContainer');
+    const powerUp = document.getElementById('powerUp');
+    const highScoreDisplay = document.getElementById('highScoreDisplay');
+    const leaderboard = document.getElementById('leaderboard');
+    const leaderboardList = document.getElementById('leaderboardList');
+    const gameOver = document.getElementById('gameOver');
+    const finalScore = document.getElementById('finalScore');
+    const finalHighScore = document.getElementById('finalHighScore');
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+
     let score = 0;
-    let gameActive = true;
+    let timeLeft = 10;
+    let interval;
+    let doublePoints = false;
+    let lastTapTime = 0;
+    let comboCount = 0;
+    let highScore = parseInt(localStorage.getItem('tapWarsHighScore') || 0);
+    let leaderboardScores = JSON.parse(localStorage.getItem('tapWarsLeaderboard') || '[]');
+    let targets = [];
+    let particles = [];
+    let isMobile = 'ontouchstart' in window;
 
-    // Load tap sound (replace with your own sound URL from Freesound/Zapsplat)
-    const tapSound = new Audio('https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-77318/zapsplat_multimedia_button_click_bright_006_92099.mp3');
+    // Canvas setup
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
 
-    tapButton.addEventListener('click', handleTap);
-    tapButton.addEventListener('touchstart', handleTap); // Mobile support
-
-    function handleTap(e) {
-      e.preventDefault();
-      if (!gameActive) return;
-
-      score++;
-      scoreDisplay.textContent = `Score: ${score}`;
-      tapSound.play();
-
-      // Random color change for fun
-      tapButton.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 50%)`;
-
-      // End game after 10 taps (example condition)
-      if (score >= 10) {
-        endGame();
+    // Particle system
+    function createParticles(x, y, count = 10, hue = Math.random() * 360) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * 2 * Math.PI;
+        const speed = Math.random() * 5 + 2;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          radius: Math.random() * 5 + 2,
+          hue,
+          alpha: 1,
+          life: 1,
+        });
       }
     }
 
-    function endGame() {
-      gameActive = false;
-      gameOverScreen.style.display = 'flex';
-      finalScoreDisplay.textContent = `Final Score: ${score}`;
-      tapButton.style.display = 'none';
+    function updateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles = particles.filter(p => p.life > 0);
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.02;
+        p.alpha = p.life;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${p.alpha})`;
+        ctx.fill();
+      });
+      if (particles.length > 0) requestAnimationFrame(updateParticles);
     }
 
-    function restartGame() {
-      gameActive = true;
+    // Initialize leaderboard
+    if (leaderboardScores.length > 0) {
+      updateLeaderboard();
+      leaderboard.classList.remove('hidden');
+    }
+    if (highScore > 0) {
+      highScoreDisplay.textContent = `🏆 High Score: ${highScore}`;
+      highScoreDisplay.classList.remove('hidden');
+    }
+
+    function startGame() {
+      themeToggle.classList.add('hidden');
       score = 0;
+      timeLeft = 10;
+      comboCount = 0;
+      scoreDisplay.textContent = 'Score: 0';
+      comboDisplay.textContent = 'Combo: x1';
+      countdown.textContent = 'Time: 10s';
+      progressBar.style.width = '100%';
+      targets.forEach(target => target.element.remove());
+      targets = [];
+      particles = [];
+      gameOver.classList.remove('show');
+
+      startButton.classList.add('hidden');
+      tapButton.classList.toggle('hidden', isMobile);
+      scoreDisplay.classList.remove('hidden');
+      comboDisplay.classList.remove('hidden');
+      restartButton.classList.add('hidden');
+      shareBtn.classList.add('hidden');
+      progressContainer.classList.remove('hidden');
+      powerUp.classList.add('hidden');
+      leaderboard.classList.add('hidden');
+      doublePoints = false;
+      tapButton.classList.remove('double');
+
+      interval = setInterval(() => {
+        timeLeft -= 0.1;
+        countdown.textContent = `Time: ${timeLeft.toFixed(1)}s`;
+        progressBar.style.width = `${timeLeft * 10}%`;
+
+        if (timeLeft <= 5 || timeLeft <= 2) {
+          activatePowerUp();
+        }
+
+        if (Math.random() < 0.03 && targets.length < 5) {
+          spawnTarget();
+        }
+
+        targets.forEach(target => {
+          target.x += target.vx;
+          target.y += target.vy;
+          target.element.style.left = `${target.x}px`;
+          target.element.style.top = `${target.y}px`;
+
+          if (target.x < -50 || target.x > window.innerWidth + 50 || target.y < -50 || target.y > window.innerHeight + 50) {
+            target.element.remove();
+            targets = targets.filter(t => t !== target);
+            timeLeft = Math.max(0, timeLeft - 0.1);
+          }
+        });
+
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          endGame();
+        }
+      }, 100);
+
+      requestAnimationFrame(updateParticles);
+    }
+
+    function spawnTarget() {
+      const target = document.createElement('div');
+      target.classList.add('target');
+      if (Math.random() < 0.2) target.classList.add('gold');
+      const isGold = target.classList.contains('gold');
+      const size = clamp(40, 10 * window.innerWidth / 100, 60);
+      target.style.width = `${size}px`;
+      target.style.height = `${size}px`;
+
+      const x = Math.random() * (window.innerWidth - size);
+      const y = Math.random() * (window.innerHeight - size - 100) + 50;
+      const angle = Math.random() * 2 * Math.PI;
+      const speed = clamp(2, window.innerWidth / 400, 4);
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed;
+
+      target.style.left = `${x}px`;
+      target.style.top = `${y}px`;
+      gameArea.appendChild(target);
+
+      targets.push({ element: target, x, y, vx, vy, isGold });
+
+      target.addEventListener('click', () => destroyTarget(target, isGold));
+      target.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        destroyTarget(target, isGold);
+      });
+    }
+
+    function destroyTarget(target, isGold) {
+      const index = targets.findIndex(t => t.element === target);
+      if (index !== -1) {
+        const { x, y } = targets[index];
+        targets.splice(index, 1);
+        target.remove();
+        const points = isGold ? 20 : (doublePoints ? 10 : 5);
+        score += points;
+        scoreDisplay.textContent = `Score: ${score}`;
+        scoreDisplay.classList.add('bounce');
+        targetSound.currentTime = 0;
+        targetSound.play();
+        createParticles(x + size / 2, y + size / 2, 15, isGold ? 51 : 200);
+        setTimeout(() => scoreDisplay.classList.remove('bounce'), 150);
+      }
+    }
+
+    function activatePowerUp() {
+      if (!doublePoints) {
+        doublePoints = true;
+        powerUp.classList.remove('hidden');
+        powerSound.currentTime = 0;
+        powerSound.play();
+        tapButton.classList.add('double');
+
+        setTimeout(() => {
+          doublePoints = false;
+          powerUp.classList.add('hidden');
+          tapButton.classList.remove('double');
+        }, 3000);
+      }
+    }
+
+    function tap(e) {
+      if (e.target.tagName === 'BUTTON' && e.target !== tapButton) return;
+      let x = e.clientX || e.touches[0].clientX;
+      let y = e.clientY || e.touches[0].clientY;
+      let now = Date.now();
+      let points = 1;
+      if (now - lastTapTime <= 400) {
+        comboCount++;
+        if (comboCount >= 3) {
+          points = comboCount;
+          targetSound.currentTime = 0;
+          targetSound.play();
+        }
+      } else {
+        comboCount = 1;
+      }
+      points = doublePoints ? points * 2 : points;
+      score += points;
+      lastTapTime = now;
       scoreDisplay.textContent = `Score: ${score}`;
-      gameOverScreen.style.display = 'none';
-      tapButton.style.display = 'block';
-      tapButton.style.backgroundColor = '#4CAF50';
+      comboDisplay.textContent = `Combo: x${comboCount}`;
+      scoreDisplay.classList.add('bounce');
+      tapSound.currentTime = 0;
+      tapSound.volume = 0.7;
+      tapSound.play();
+      createParticles(x, y, 8);
+      if (isMobile) createRipple(x, y);
+
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+
+      setTimeout(() => scoreDisplay.classList.remove('bounce'), 150);
+    }
+
+    function createRipple(x, y) {
+      let ripple = document.createElement('div');
+      ripple.classList.add('ripple');
+      ripple.style.left = `${x - 10}px`;
+      ripple.style.top = `${y - 10}px`;
+      document.body.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 500);
+    }
+
+    function endGame() {
+      countdown.textContent = "Time's Up!";
+      endSound.play();
+      tapButton.classList.add('hidden');
+      restartButton.classList.add('hidden');
+      shareBtn.classList.add('hidden');
+      progressContainer.classList.add('hidden');
+      powerUp.classList.add('hidden');
+      comboDisplay.classList.add('hidden');
+      highScoreDisplay.classList.add('hidden');
+      leaderboard.classList.add('hidden');
+      themeToggle.classList.remove('hidden');
+      targets.forEach(target => target.element.remove());
+      targets = [];
+
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('tapWarsHighScore', score);
+        finalHighScore.textContent = `🏆 New High Score: ${score}!`;
+      } else {
+        finalHighScore.textContent = `🏆 High Score: ${highScore}`;
+      }
+
+      finalScore.textContent = `Score: ${score}`;
+      gameOver.classList.add('show');
+      createParticles(window.innerWidth / 2, window.innerHeight / 2, 30);
+    }
+
+    function updateLeaderboard() {
+      leaderboardList.innerHTML = '';
+      leaderboardScores.forEach((entry, index) => {
+        let li = document.createElement('li');
+        li.textContent = `#${index + 1}: ${entry.score} - ${entry.date}`;
+        leaderboardList.appendChild(li);
+      });
+    }
+
+    function shareScore() {
+      const shareText = `I scored ${score} in TAP WARS with a x${comboCount} combo! 🔥 Beat me! ${window.location.href}`;
+      if (navigator.share) {
+        navigator.share({ title: 'TAP WARS', text: shareText, url: window.location.href });
+      } else {
+        prompt('Copy this to share your score:', shareText);
+      }
+    }
+
+    function clamp(min, val, max) {
+      return Math.min(Math.max(val, min), max);
+    }
+
+    // Theme handling
+    if (localStorage.getItem('tapWarsTheme') === 'light') {
+      body.classList.add('light');
+      themeToggle.textContent = '🌞 Light Mode';
+    }
+
+    themeToggle.addEventListener('click', () => {
+      body.classList.toggle('light');
+      const mode = body.classList.contains('light') ? 'light' : 'dark';
+      themeToggle.textContent = mode === 'light' ? '🌞 Light Mode' : '🌙 Dark Mode';
+      localStorage.setItem('tapWarsTheme', mode);
+    });
+
+    // Event listeners
+    startButton.addEventListener('click', startGame);
+    restartButton.addEventListener('click', startGame);
+    playAgainBtn.addEventListener('click', startGame);
+    shareBtn.addEventListener('click', shareScore);
+    tapButton.addEventListener('click', tap);
+    if (isMobile) {
+      gameArea.addEventListener('touchstart', (e) => {
+        if (!tapButton.classList.contains('hidden') && e.target === gameArea) {
+          e.preventDefault();
+          tap(e);
+        }
+      });
+    } else {
+      tapButton.addEventListener('click', tap);
     }
   </script>
 </body>
