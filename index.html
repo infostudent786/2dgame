@@ -100,12 +100,28 @@
       height: clamp(60px, 15vw, 100px);
       font-size: clamp(1.2em, 5vw, 1.5em);
       animation: pulseButton 1.5s infinite;
+      overflow: hidden;
     }
     #tapButton:active {
       animation: pop 0.2s ease-in-out;
       background: var(--orange);
       box-shadow: 0 4px #aa3e17;
       transform: translateY(4px);
+    }
+    #tapButton.shockwave::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(255, 115, 22, 0.5) 10%, transparent 70%);
+      transform: translate(-50%, -50%) scale(0);
+      animation: shockwave 0.5s ease-out;
+    }
+    @keyframes shockwave {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
     }
     #tapButton.double {
       background: var(--cyan);
@@ -507,6 +523,8 @@
     let leaderboardScores = JSON.parse(localStorage.getItem('tapWarsLeaderboard') || '[]');
     let particles = [];
     let sparkles = [];
+    let fireworks = [];
+    let sprites = [];
     const tapWords = ['TAP!', 'SMASH!', 'HIT!', 'BAM!', 'POW!'];
     const achievementsData = [
       { id: 'score50', name: 'Score Master', condition: () => score >= 50, unlocked: false },
@@ -530,6 +548,14 @@
       canvas.height = window.innerHeight;
     });
 
+    // Sprite sheet setup (placeholder - replace with actual sprite sheet)
+    const spriteSheet = new Image();
+    spriteSheet.src = 'https://opengameart.org/sites/default/files/explosion.png'; // CC0 sprite sheet
+    const spriteWidth = 64; // Adjust based on sprite sheet
+    const spriteHeight = 64;
+    const spriteFrames = 8;
+    const spriteDuration = 400; // ms
+
     // Particle system
     function createParticles(x, y, count = 20, hue = Math.random() * 360, isFiery = false) {
       for (let i = 0; i < count; i++) {
@@ -548,6 +574,16 @@
       }
     }
 
+    // Sprite animation
+    function createSprite(x, y) {
+      sprites.push({
+        x,
+        y,
+        frame: 0,
+        startTime: Date.now(),
+      });
+    }
+
     // Sparkle system
     function createSparkle() {
       sparkles.push({
@@ -558,6 +594,26 @@
         radius: Math.random() * 2 + 1,
         alpha: Math.random() * 0.5 + 0.5,
       });
+    }
+
+    // Firework system
+    function createFirework(x, y) {
+      const count = 50;
+      const hue = Math.random() * 360;
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * 2 * Math.PI;
+        const speed = Math.random() * 5 + 3;
+        fireworks.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          radius: Math.random() * 3 + 1,
+          hue,
+          alpha: 1,
+          life: 1.5,
+        });
+      }
     }
 
     function updateCanvas() {
@@ -589,7 +645,36 @@
         ctx.fill();
       });
 
-      if (particles.length > 0 || sparkles.length > 0) requestAnimationFrame(updateCanvas);
+      // Sprites
+      sprites = sprites.filter(s => Date.now() - s.startTime < spriteDuration);
+      sprites.forEach(s => {
+        const elapsed = Date.now() - s.startTime;
+        const frame = Math.floor((elapsed / spriteDuration) * spriteFrames);
+        if (frame < spriteFrames) {
+          ctx.drawImage(
+            spriteSheet,
+            frame * spriteWidth, 0, spriteWidth, spriteHeight,
+            s.x - spriteWidth / 2, s.y - spriteHeight / 2, spriteWidth, spriteHeight
+          );
+        }
+      });
+
+      // Fireworks
+      fireworks = fireworks.filter(f => f.life > 0);
+      fireworks.forEach(f => {
+        f.x += f.vx;
+        f.y += f.vy;
+        f.life -= 0.02;
+        f.alpha = f.life;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = `hsla(${f.hue}, 100%, 50%, ${f.alpha})`;
+        ctx.fill();
+      });
+
+      if (particles.length > 0 || sparkles.length > 0 || sprites.length > 0 || fireworks.length > 0) {
+        requestAnimationFrame(updateCanvas);
+      }
     }
 
     updateCanvas();
@@ -616,9 +701,9 @@
       tapStreak = 0;
       scoreDisplay.textContent = 'Score: 0';
       comboDisplay.textContent = 'Combo: x1';
-      countdown.textContent = 'Time: 10s';
       comboMeter.style.width = '0%';
       comboMeter.classList.remove('active');
+      countdown.textContent = 'Time: 10s';
       progressBar.style.width = '100%';
       gameOver.classList.remove('show');
       tapButton.textContent = 'TAP!';
@@ -644,7 +729,7 @@
 
       interval = setInterval(() => {
         timeLeft--;
-        updateDisplay();
+        countdown.textContent = `Time: ${timeLeft}s`;
         progressBar.style.width = `${timeLeft * 10}%`;
 
         if (timeLeft === 5 || timeLeft === 2) {
@@ -661,15 +746,13 @@
     function activatePowerUp() {
       doublePoints = true;
       powerUp.classList.remove('hidden');
-      updateDisplay();
       powerSound.currentTime = 0;
-      powerSound.play();
+      powerSound.play().catch(e => console.error('Power sound failed:', e));
       tapButton.classList.add('double');
 
       setTimeout(() => {
         doublePoints = false;
-        powerUp.classList.remove('hidden');
-        updateDisplay();
+        powerUp.classList.add('hidden');
         tapButton.classList.remove('double');
       }, 3000);
     }
@@ -687,7 +770,7 @@
         if (comboCount >= 3) {
           points += 2;
           comboSound.currentTime = 0;
-          comboSound.play();
+          comboSound.play().catch(e => console.error('Combo sound failed:', e));
           createParticles(x, y, 30, 20, true);
         }
       } else {
@@ -698,40 +781,40 @@
       score += points;
       lastTapTime = now;
       tapButton.textContent = tapWords[Math.floor(Math.random() * tapWords.length)];
-      updateDisplay();
+      scoreDisplay.textContent = `Score: ${score}`;
+      comboDisplay.textContent = `Combo: x${comboCount}`;
+      comboMeter.style.width = `${Math.min(comboCount * 20, 100)}%`;
+      if (comboCount >= 3) comboMeter.classList.add('active');
+      else comboMeter.classList.remove('active');
 
       // Visual feedback
+      tapButton.classList.add('shockwave');
+      setTimeout(() => tapButton.classList.remove('shockwave'), 500);
       createRipple(x, y);
       createScorePop(x, y, `+${points}`);
       createParticles(x, y);
+      createSprite(x, y);
 
       // Streak display
       if (tapStreak >= 2) {
         createStreakDisplay(x, y, `${tapStreak} Taps!`);
       }
 
+      // Audio
+      tapSound.currentTime = 0;
+      tapSound.play().catch(e => console.error('Tap sound failed:', e));
+
       if (navigator.vibrate) {
         navigator.vibrate(50);
       }
-    }
 
-    function updateDisplay() {
-      scoreDisplay.textContent = `Score: ${score}`;
-      comboDisplay.textContent = `Combo: x${comboCount}`;
-      countdown.textContent = `Time: ${timeLeft}s`;
-      comboMeter.style.width = `${Math.min(comboCount * 20, 100)}%`;
-      if (comboCount >= 3) {
-        comboMeter.classList.add('active');
-      } else {
-        comboMeter.classList.remove('active');
-      }
       checkAchievements();
     }
 
     function createRipple(x, y) {
       if (!x || !y) return;
       const ripple = document.createElement('div');
-      ripple.className = 'ripple';
+      ripple.classList.add('ripple');
       ripple.style.left = `${x - 10}px`;
       ripple.style.top = `${y - 10}px`;
       document.body.appendChild(ripple);
@@ -741,7 +824,7 @@
     function createScorePop(x, y, text) {
       if (!x || !y) return;
       const pop = document.createElement('div');
-      pop.className = 'score-pop';
+      pop.classList.add('score-pop');
       pop.textContent = text;
       pop.style.left = `${x}px`;
       pop.style.top = `${y}px`;
@@ -751,13 +834,13 @@
 
     function createStreakDisplay(x, y, text) {
       if (!x || !y) return;
-      const display = document.createElement('div');
-      display.className = 'streakDisplay';
-      display.textContent = text;
-      display.style.left = `${x}px`;
-      display.style.top = `${y - 40}px`;
-      tapButton.parentElement.appendChild(display);
-      setTimeout(() => display.remove(), 500);
+      const streak = document.createElement('div');
+      streak.classList.add('streakDisplay');
+      streak.textContent = text;
+      streak.style.left = `${x}px`;
+      streak.style.top = `${y - 40}px`;
+      tapButton.parentElement.appendChild(streak);
+      setTimeout(() => streak.remove(), 500);
     }
 
     function checkAchievements() {
@@ -769,8 +852,7 @@
           newUnlocks = true;
         }
       });
-
-      if (newUnlocks.length > 0) {
+      if (newUnlocks) {
         localStorage.setItem('tapWarsAchievements', JSON.stringify(savedAchievements));
         updateAchievements();
       }
@@ -784,7 +866,6 @@
         li.textContent = `${ach.name} ${ach.unlocked ? '✅' : '🔒'}`;
         if (ach.unlocked) li.classList.add('unlocked');
         achievementsList.appendChild(li);
-
         const goLi = document.createElement('li');
         goLi.textContent = li.textContent;
         if (ach.unlocked) goLi.classList.add('unlocked');
@@ -794,7 +875,7 @@
 
     function endGame() {
       countdown.textContent = "Time's Up!";
-      endSound.play();
+      endSound.play().catch(e => console.error('End sound failed:', e));
       tapButton.classList.add('hidden');
       restartButton.classList.remove('hidden');
       shareBtn.classList.remove('hidden');
@@ -821,6 +902,8 @@
         localStorage.setItem('tapWarsHighScore', score);
         finalHighScore.textContent = `🏆 New High Score: ${score}!`;
         highScoreDisplay.textContent = `🏆 High Score: ${score}!`;
+        createFirework(window.innerWidth / 2, window.innerHeight / 2);
+        createFirework(window.innerWidth / 3, window.innerHeight / 3);
       } else {
         finalHighScore.textContent = `🏆 High Score: ${highScore}`;
         highScoreDisplay.textContent = `🏆 High Score: ${highScore}`;
@@ -831,16 +914,17 @@
     }
 
     function updateLeaderboard() {
-      leaderboardScores.push({ score, date: new Date().toLocaleString() });
+      const date = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+      leaderboardScores.push({ score, date });
       leaderboardScores.sort((a, b) => b.score - a.score);
       leaderboardScores = leaderboardScores.slice(0, 5);
       localStorage.setItem('tapWarsLeaderboard', JSON.stringify(leaderboardScores));
 
       leaderboardList.innerHTML = '';
       gameOverLeaderboardList.innerHTML = '';
-      leaderboardScores.forEach((s, i) => {
+      leaderboardScores.forEach((entry, index) => {
         const li = document.createElement('li');
-        li.textContent = `#${i + 1}: ${s.score} - ${s.date}`;
+        li.textContent = `#${index + 1}: ${entry.score} - ${entry.date}`;
         leaderboardList.appendChild(li);
         const goLi = document.createElement('li');
         goLi.textContent = li.textContent;
