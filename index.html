@@ -93,20 +93,19 @@
       font-weight: 600;
     }
     #tapButton {
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 8px var(--blue-dark), 0 0 15px var(--blue);
       width: clamp(150px, 50vw, 250px);
       height: clamp(60px, 15vw, 100px);
       font-size: clamp(1.2em, 5vw, 1.5em);
-      background: url('https://opengameart.org/sites/default/files/button_normal.png') no-repeat center/cover;
-      color: #fff;
-      box-shadow: 0 8px #4b47a5, 0 0 15px var(--purple);
       animation: pulseButton 1.5s infinite;
       overflow: hidden;
-      text-shadow: 0 0 5px #000;
     }
     #tapButton:active {
-      background: url('https://opengameart.org/sites/default/files/button_pressed.png') no-repeat center/cover;
       animation: pop 0.2s ease-in-out;
-      box-shadow: 0 4px #3a3680;
+      background: var(--orange);
+      box-shadow: 0 4px #aa3e17;
       transform: translateY(4px);
     }
     #tapButton.shockwave::before {
@@ -125,9 +124,11 @@
       100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
     }
     #tapButton.double {
+      background: var(--cyan);
       box-shadow: 0 8px var(--cyan-dark), 0 0 20px var(--cyan);
       text-shadow: 0 0 8px var(--cyan);
       position: relative;
+      overflow: hidden;
     }
     #tapButton.double::after {
       content: '';
@@ -140,9 +141,11 @@
       animation: glowRing 1.5s infinite;
     }
     body.light #tapButton {
+      background: var(--purple);
       box-shadow: 0 8px #4b47a5, 0 0 15px var(--purple);
     }
     body.light #tapButton.double {
+      background: var(--cyan);
       box-shadow: 0 8px var(--cyan-dark), 0 0 20px var(--cyan);
     }
     @keyframes pulseButton {
@@ -434,80 +437,79 @@
     </div>
     <div id="powerUp" class="hidden">⚡ DOUBLE POINTS!</div>
     <div id="score" class="hidden">Score: 0</div>
-    <div>
     <div id="comboDisplay" class="hidden">Combo: x1</div>
     <div id="comboMeterContainer" class="hidden">
       <div id="comboMeter"></div>
     </div>
     <button id="tapButton" class="hidden">TAP!</button>
-    <div id="highScoreDisplay" class="hidden" style="margin-top:10px; font-size:1.2em; color:#facc15; min-height:24px;"></div>
+    <div id="highScoreDisplay" class="hidden" style="margin-top:10px; font-size:1.1em; color:#facc15; min-height:24px;"></div>
     <button id="startButton">Start Game</button>
-    <button id="restartButton" class="hidden">Restart Game</button>
-    <button id="shareBtn" class="hidden">Share</button>
-    <div id="leaderboardList" classList="hidden">
+    <button id="restartButton" class="hidden">Play Again</button>
+    <button id="shareBtn" class="hidden">Share Score</button>
+    <div id="leaderboard" class="hidden">
       <h3>🏆 Leaderboard</h3>
       <ul id="leaderboardList"></ul>
     </div>
-    <div id="achievements" classList="hidden">
+    <div id="achievements" class="hidden">
       <h3>⭐ Achievements</h3>
       <ul id="achievementsList"></ul>
     </div>
-    <div id="gameOver" class="over" class="hidden">
+    <div id="gameOver" class="hidden">
       <h2>Game Over!</h2>
       <p id="finalScore"></p>
       <p id="finalHighScore"></p>
-      <div id="gameLeaderboardList" class="hidden">
+      <div id="gameOverLeaderboard" class="hidden">
         <h3>🏆 Leaderboard</h3>
         <ul id="gameOverLeaderboardList"></ul>
-        </div>
-      <div id="gameAchievements" list="hidden">
+      </div>
+      <div id="gameOverAchievements" class="hidden">
         <h3>⭐ Achievements</h3>
-        <ul id="gameAchievementsList"></ul>
-      </ul>
+        <ul id="gameOverAchievementsList"></ul>
+      </div>
       <button id="playAgainBtn">Play Again</button>
     </div>
   </div>
-  <canvas id="myCanvas"></canvas>
+  <canvas id="particleCanvas"></canvas>
 
-  <!-- Audio (local with Freesound fallback) -->
-  <audio id="tapSound" src="/sounds/tap.mp3" onerror="this.src='https://freesound.org/data/previews/256/256113/3263906-lq.mp3'"></audio>
-  <audio id="powerSound" src="/sounds/power.mp3" onerror="this.src='https://freesound.org/data/previews/331/390/3248244-lq.mp3'"></audio>
-  <audio id="endSound" src="/sounds/end.mp3" onerror="this.src='https://freesound.org/data/previews/171/495/2398400-lq.mp3'"></audio>
-  <audio id="comboSound" src="/sounds/combo.mp3" onerror="this.src='https://freesound.org/data/previews/66/667/634617-lq.mp3'"></audio>
+  <!-- Sounds (all CC0 from Freesound) -->
+  <audio id="tapSound" src="https://freesound.org/data/previews/256/256113_3263906-lq.mp3"></audio>
+  <audio id="powerSound" src="https://freesound.org/data/previews/331/331912_3248244-lq.mp3"></audio>
+  <audio id="endSound" src="https://freesound.org/data/previews/171/171497_2398400-lq.mp3"></audio>
+  <audio id="comboSound" src="https://freesound.org/data/previews/66/66717_634166-lq.mp3"></audio>
 
-<script>
+  <script>
     const body = document.body;
     const themeToggle = document.getElementById('themeToggle');
     const countdown = document.getElementById('countdown');
     const startButton = document.getElementById('startButton');
-    const tapButton = document.getElementById('tapsButton');
+    const tapButton = document.getElementById('tapButton');
     const scoreDisplay = document.getElementById('score');
     const comboDisplay = document.getElementById('comboDisplay');
     const comboMeterContainer = document.getElementById('comboMeterContainer');
     const comboMeter = document.getElementById('comboMeter');
     const restartButton = document.getElementById('restartButton');
     const shareBtn = document.getElementById('shareBtn');
-    const playAgainBtn = document.getElementById('playAgain');
-    const tapSound = document.getElementById('tapsound');
-    const powerSound = document.getElementById('powerUpSound');
+    const playAgainBtn = document.getElementById('playAgainBtn');
+    const tapSound = document.getElementById('tapSound');
+    const powerSound = document.getElementById('powerSound');
     const endSound = document.getElementById('endSound');
     const comboSound = document.getElementById('comboSound');
     const progressBar = document.getElementById('progressBar');
     const progressContainer = document.getElementById('progressBarContainer');
     const powerUp = document.getElementById('powerUp');
-    const highScoreDisplay = document.getElementById('scoreHighScoreDisplay');
+    const highScoreDisplay = document.getElementById('highScoreDisplay');
     const gameOver = document.getElementById('gameOver');
     const finalScore = document.getElementById('finalScore');
     const finalHighScore = document.getElementById('finalHighScore');
-    const leaderboard = document.getElementById('leaderboardList');
+    const leaderboard = document.getElementById('leaderboard');
     const leaderboardList = document.getElementById('leaderboardList');
-    const gameOverLeaderboard = document.getElementById('gameOverLeaderboardList');
-    const gameOverList = document.getElementById('gameOverLeaderboardList');
-    const achievements = document.getElementById('gameAchievements');
+    const gameOverLeaderboard = document.getElementById('gameOverLeaderboard');
+    const gameOverLeaderboardList = document.getElementById('gameOverLeaderboardList');
+    const achievements = document.getElementById('achievements');
     const achievementsList = document.getElementById('achievementsList');
     const gameOverAchievements = document.getElementById('gameOverAchievements');
     const gameOverAchievementsList = document.getElementById('gameOverAchievementsList');
-    const canvas = document.getElementById('myCanvas');
+    const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
 
     let score = 0;
@@ -516,26 +518,25 @@
     let doublePoints = false;
     let lastTapTime = 0;
     let comboCount = 0;
-    let tapCount = 0;
-    let tapStreak = parseInt(localStorage.getItem('tapWarsHighScore') || '0');
+    let tapStreak = 0;
+    let highScore = parseInt(localStorage.getItem('tapWarsHighScore') || 0);
     let leaderboardScores = JSON.parse(localStorage.getItem('tapWarsLeaderboard') || '[]');
     let particles = [];
     let sparkles = [];
     let fireworks = [];
     let sprites = [];
-    let avatar = null;
     const tapWords = ['TAP!', 'SMASH!', 'HIT!', 'BAM!', 'POW!'];
-    const achievementsData = [ [
-      { id: 'score50', name: 'Score Master', condition: () => score >= 50, unlocked: = false },
-      { id: 'combo5', name: 'Combo King', condition: () => comboCount >= 5, unlocked: = false },
-      { id: 'streak10', name: 'Tap Frenzy', condition: () => tapStreak >= 10, unlocked: = false },
-      { id: 'play5', name: 'Dedicated', condition: () => (parseInt(localStorage.getItem('tapWarsGamesPlayed') || '0') + 1) >= 5, unlocked: = false },
-      { id: 'powerUp', name: 'Power Surge', condition: () => doublePoints, unlocked: = false },
+    const achievementsData = [
+      { id: 'score50', name: 'Score Master', condition: () => score >= 50, unlocked: false },
+      { id: 'combo5', name: 'Combo King', condition: () => comboCount >= 5, unlocked: false },
+      { id: 'streak10', name: 'Tap Frenzy', condition: () => tapStreak >= 10, unlocked: false },
+      { id: 'play5', name: 'Dedicated', condition: () => (parseInt(localStorage.getItem('tapWarsGamesPlayed') || 0) + 1) >= 5, unlocked: false },
+      { id: 'powerUp', name: 'Power Surge', condition: () => doublePoints, unlocked: false },
     ];
     let savedAchievements = JSON.parse(localStorage.getItem('tapWarsAchievements') || '{}');
 
     // Initialize achievements
-    achievementsData.forEach(ach => { {
+    achievementsData.forEach(ach => {
       if (savedAchievements[ach.id]) ach.unlocked = true;
     });
 
@@ -547,43 +548,33 @@
       canvas.height = window.innerHeight;
     });
 
-    // Sprite sheets
-    const tapSpriteSheet = new Image();
-    tapSpriteSheet.src = 'https://opengameart.org/sites/default/files/explosion.png'; // CC0 explosion
-    const tapSpriteWidth = 64;
-    const tapSpriteHeight = 64;
-    const tapSpriteFrames = 8;
-    const tapSpriteDuration = 400;
-
-    const avatarSpriteSheet = new Image();
-    avatarSpriteSheet.src = 'https://opengameart.org/sites/default/files/character-dance.png'; // CC0 CC0 dance sprite
-    const sheetAvatar = Width = 64;
-    const avatarWidth = width;
-    const avatarHeight = 64;
-    const heightAvatarHeight;
-    const avatarFrames = 8;
-    const avatarDurationBase = 600; // Base duration for slow animation (ms)
+    // Sprite sheet setup (placeholder - replace with actual sprite sheet)
+    const spriteSheet = new Image();
+    spriteSheet.src = 'https://opengameart.org/sites/default/files/explosion.png'; // CC0 sprite sheet
+    const spriteWidth = 64; // Adjust based on sprite sheet
+    const spriteHeight = 64;
+    const spriteFrames = 8;
+    const spriteDuration = 400; // ms
 
     // Particle system
     function createParticles(x, y, count = 20, hue = Math.random() * 360, isFiery = false) {
       for (let i = 0; i < count; i++) {
-        const angle = Math.random() * x 2 * Math.PI;
-        const speed = Math.random() * x (isFiery ? 8 : 5) + 2;
+        const angle = Math.random() * 2 * Math.PI;
+        const speed = Math.random() * (isFiery ? 8 : 5) + 2;
         particles.push({
           x,
           y,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           radius: Math.random() * (isFiery ? 6 : 4) + 2,
-          hue,
-          radius: Math.random() * hue,
+          hue: isFiery ? 20 : hue,
           alpha: 1,
           life: isFiery ? 0.5 : 1,
         });
-      })
+      }
     }
 
-    // Tap sprite animation
+    // Sprite animation
     function createSprite(x, y) {
       sprites.push({
         x,
@@ -593,51 +584,37 @@
       });
     }
 
-    // Avatar animation
-    function createAvatar(x, y) {
-      avatar = {
-        x,
-        y,
-        frame: 0,
-        startTime: Date.now(),
-        tapSpeed: avatarDurationBase, // Initial animation duration
-        isPowerUp: false,
-      };
-    }
-
     // Sparkle system
     function createSparkle() {
       sparkles.push({
         x: Math.random() * canvas.width,
-        x: Math.random(),
         y: 0,
         vx: (Math.random() - 0.5) * 2,
         vy: Math.random() * 3 + 1,
         radius: Math.random() * 2 + 1,
         alpha: Math.random() * 0.5 + 0.5,
       });
-    });
+    }
 
     // Firework system
     function createFirework(x, y) {
       const count = 50;
-      const hue = Math.random() * x 360;
+      const hue = Math.random() * 360;
       for (let i = 0; i < count; i++) {
-        const angle = Math.random() * x 2 * x Math.PI;
-        const speed = Math.random() * x 3 + 3;
+        const angle = Math.random() * 2 * Math.PI;
+        const speed = Math.random() * 5 + 3;
         fireworks.push({
           x,
           y,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          radius: Math.random() * x 3 + 1,
+          radius: Math.random() * 3 + 1,
           hue,
-          radius: Math.random(),
           alpha: 1,
           life: 1.5,
         });
-      })
-    });
+      }
+    }
 
     function updateCanvas() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -668,42 +645,18 @@
         ctx.fill();
       });
 
-      // Tap sprites
-      sprites = sprites.filter(s => Date.now() - s.startTime < tapSpriteDuration);
+      // Sprites
+      sprites = sprites.filter(s => Date.now() - s.startTime < spriteDuration);
       sprites.forEach(s => {
         const elapsed = Date.now() - s.startTime;
-        const frame = Math.floor((elapsed / tapSpriteDuration) * tapSpriteFrames);
-        if (frame < tapSpriteFrames) {
+        const frame = Math.floor((elapsed / spriteDuration) * spriteFrames);
+        if (frame < spriteFrames) {
           ctx.drawImage(
-            tapSpriteSheet,
-            frame * tapSpriteWidth, * 0, tapSpriteWidth, tapSpriteHeight,
-            s.x - tapSpriteWidth / 2, s.y - tapSpriteHeight / 2,
-            spriteWidth, tapSpriteHeight,
-            s.x - spriteHeight,
+            spriteSheet,
+            frame * spriteWidth, 0, spriteWidth, spriteHeight,
+            s.x - spriteWidth / 2, s.y - spriteHeight / 2, spriteWidth, spriteHeight
           );
         }
-      });
-
-      // Avatar
-      if (avatar) {
-        const elapsed = Date.now() - avatar.startTime;
-        const frameDuration = Math.max(avatar.tapSpeed / avatarFrames, 50); // Min 50ms
-        const frame = Math.floor((elapsed / frameDuration) % avatarFrames);
-        const scale = avatar.isPowerUp ? 1.2 : 1 + Math.sin(elapsed / 0.1); * 0.1); // Bounce
-        const rotation = Math.sin(elapsed / 0.2) * 0.05; // Tilt
-        ctx.save();
-        ctx.globalCompositeOperation = avatar.isPowerUp ? 'lighter': 'source-over';
-        ctx.translate(avatar.x, avatar.y);
-        ctx.rotate(rotation);
-        ctx.scale(scale, scale);
-        ctx.drawImage(
-          avatarSpriteSheet,
-          frameWidth * avatarWidth, 0, avatarHeight,
-          avatarHeight,
-          -avatarWidth / 2, -avatarHeight / 2,
-          avatarWidth, avatarHeight,
-        );
-        ctx.restore();
       });
 
       // Fireworks
@@ -713,14 +666,13 @@
         f.y += f.vy;
         f.life -= 0.02;
         f.alpha = f.life;
-        f.alpha += f.vy;
         ctx.beginPath();
-        ctx.arc(f.x, f.y, f.radius, f0, v0);
+        ctx.arc(f.x, f.y, f.radius, 0, 2 * Math.PI);
         ctx.fillStyle = `hsla(${f.hue}, 100%, 50%, ${f.alpha})`;
-        ctx.fill(f);
+        ctx.fill();
       });
 
-      if (particles.length > 0 || sparkles.length > 0 || sprites.length > 0 || avatar || fireworks.length > 0)) {
+      if (particles.length > 0 || sparkles.length > 0 || sprites.length > 0 || fireworks.length > 0) {
         requestAnimationFrame(updateCanvas);
       }
     }
@@ -729,16 +681,16 @@
 
     // Initialize game
     if (highScore > 0) {
-      highScoreDisplay.textContent = `High Score: ${highScore}`;`;
-      highScoreDisplay.classList.remove('show');
+      highScoreDisplay.textContent = `🏆 High Score: ${highScore}`;
+      highScoreDisplay.classList.remove('hidden');
     }
     if (leaderboardScores.length > 0) {
       updateLeaderboard();
-      leaderboard.classList.add('show');
+      leaderboard.classList.remove('hidden');
     }
     if (Object.keys(savedAchievements).length > 0) {
       updateAchievements();
-      achievements.classList.remove('show');
+      achievements.classList.remove('hidden');
     }
 
     function startGame() {
@@ -748,14 +700,13 @@
       comboCount = 0;
       tapStreak = 0;
       scoreDisplay.textContent = 'Score: 0';
-      comboDisplay.textContent = 'Combo: x0';
+      comboDisplay.textContent = 'Combo: x1';
       comboMeter.style.width = '0%';
       comboMeter.classList.remove('active');
       countdown.textContent = 'Time: 10s';
-      progressBar.styleWidth = '100%';
+      progressBar.style.width = '100%';
       gameOver.classList.remove('show');
       tapButton.textContent = 'TAP!';
-      avatar = null;
 
       startButton.classList.add('hidden');
       tapButton.classList.remove('hidden');
@@ -768,16 +719,13 @@
       powerUp.classList.add('hidden');
       highScoreDisplay.classList.add('hidden');
       leaderboard.classList.add('hidden');
-      achievements.classList.add('show');
+      achievements.classList.add('hidden');
       gameOverLeaderboard.classList.add('hidden');
-      gameOverAchievements.classList.add('show');
+      gameOverAchievements.classList.add('hidden');
       doublePoints = false;
       tapButton.classList.remove('double');
 
-      const rect = tapButton.getBoundingClientRect();
-      createAvatar(rect.left + rect.width / 2, rect.top - 50);
-
-      localStorage.setItem('tapWarsGamesPlayed', parseInt(localStorage.getItem('tapWarsPlayed') || '0') + 1);
+      localStorage.setItem('tapWarsGamesPlayed', parseInt(localStorage.getItem('tapWarsGamesPlayed') || 0) + 1);
 
       interval = setInterval(() => {
         timeLeft--;
@@ -799,15 +747,13 @@
       doublePoints = true;
       powerUp.classList.remove('hidden');
       powerSound.currentTime = 0;
-      powerSound.play().catch(e => console.error('Power sound:', e));
+      powerSound.play().catch(e => console.error('Power sound failed:', e));
       tapButton.classList.add('double');
-      if (avatar) avatar.isPowerUp = true;
 
       setTimeout(() => {
         doublePoints = false;
         powerUp.classList.add('hidden');
         tapButton.classList.remove('double');
-        if (avatar) avatar.isPowerUp = false;
       }, 3000);
     }
 
@@ -820,23 +766,16 @@
 
       if (now - lastTapTime <= 400) {
         comboCount++;
-        tapCount++;
+        tapStreak++;
         if (comboCount >= 3) {
           points += 2;
           comboSound.currentTime = 0;
-          comboSound.play().catch(e => console.error('Combo sound:', e));
+          comboSound.play().catch(e => console.error('Combo sound failed:', e));
           createParticles(x, y, 30, 20, true);
         }
       } else {
         comboCount = 1;
-        tapCount = 1;
-      }
-
-      // Update avatar animation speed
-      if (avatar) {
-        const tapInterval = now - lastTapTime;
-        avatar.tapSpeed = Math.max(avatarDurationBase * (tapInterval / 400), 50);
-        avatar.startTime = now; // Reset animation
+        tapStreak = 1;
       }
 
       score += points;
@@ -850,15 +789,20 @@
 
       // Visual feedback
       tapButton.classList.add('shockwave');
-      setTimeout(() => tapButton.classList.remove('shockwave'), 0.0);
+      setTimeout(() => tapButton.classList.remove('shockwave'), 500);
       createRipple(x, y);
       createScorePop(x, y, `+${points}`);
       createParticles(x, y);
       createSprite(x, y);
-      
+
+      // Streak display
+      if (tapStreak >= 2) {
+        createStreakDisplay(x, y, `${tapStreak} Taps!`);
+      }
+
       // Audio
       tapSound.currentTime = 0;
-      tapSound.play().catch(e => console.error('Tap sound:', e));
+      tapSound.play().catch(e => console.error('Tap sound failed:', e));
 
       if (navigator.vibrate) {
         navigator.vibrate(50);
@@ -873,7 +817,7 @@
       ripple.classList.add('ripple');
       ripple.style.left = `${x - 10}px`;
       ripple.style.top = `${y - 10}px`;
-      document.body.appendChild(tap);
+      document.body.appendChild(ripple);
       setTimeout(() => ripple.remove(), 500);
     }
 
@@ -892,11 +836,11 @@
       if (!x || !y) return;
       const streak = document.createElement('div');
       streak.classList.add('streakDisplay');
-      streakDisplay.textContent = text;
+      streak.textContent = text;
       streak.style.left = `${x}px`;
       streak.style.top = `${y - 40}px`;
       tapButton.parentElement.appendChild(streak);
-      setTimeout(() => streak.remove(), 500));
+      setTimeout(() => streak.remove(), 500);
     }
 
     function checkAchievements() {
@@ -912,7 +856,6 @@
         localStorage.setItem('tapWarsAchievements', JSON.stringify(savedAchievements));
         updateAchievements();
       }
-      }
     }
 
     function updateAchievements() {
@@ -922,55 +865,52 @@
         const li = document.createElement('li');
         li.textContent = `${ach.name} ${ach.unlocked ? '✅' : '🔒'}`;
         if (ach.unlocked) li.classList.add('unlocked');
-        li.appendChild(achievementsList);
+        achievementsList.appendChild(li);
         const goLi = document.createElement('li');
         goLi.textContent = li.textContent;
         if (ach.unlocked) goLi.classList.add('unlocked');
-        li.appendChild(goAchievementsList);
+        gameOverAchievementsList.appendChild(goLi);
       });
     }
 
     function endGame() {
       countdown.textContent = "Time's Up!";
-      endSound.play().catch(e => console.error('End sound:', e));
+      endSound.play().catch(e => console.error('End sound failed:', e));
       tapButton.classList.add('hidden');
       restartButton.classList.remove('hidden');
       shareBtn.classList.remove('hidden');
       progressContainer.classList.add('hidden');
       powerUp.classList.add('hidden');
       comboDisplay.classList.add('hidden');
-      comboMeterContainer.classList.remove('hidden');
-      highScoreDisplay.classList.remove('high-score');
-      themeToggle.classList.add('hidden');
+      comboMeterContainer.classList.add('hidden');
+      highScoreDisplay.classList.remove('hidden');
+      themeToggle.classList.remove('hidden');
       gameOver.classList.add('show');
 
       if (score > 0) {
         updateLeaderboard();
-        gameOverLeaderboard.classList.add('show');
+        gameOverLeaderboard.classList.remove('hidden');
       }
 
       checkAchievements();
       if (Object.keys(savedAchievements).length > 0) {
-        gameOverAchievements.classList.remove('show');
+        gameOverAchievements.classList.remove('hidden');
       }
 
       if (score > highScore) {
         highScore = score;
         localStorage.setItem('tapWarsHighScore', score);
-        finalHighScore.textContent = `High Score: ${score}!`;
-        highScoreDisplay.textContent = `High Score: ${score}!`;`;
+        finalHighScore.textContent = `🏆 New High Score: ${score}!`;
+        highScoreDisplay.textContent = `🏆 High Score: ${score}!`;
         createFirework(window.innerWidth / 2, window.innerHeight / 2);
         createFirework(window.innerWidth / 3, window.innerHeight / 3);
       } else {
-        finalHighScore.textContent = `High Score: ${highScore}`;
-        highScoreDisplay.textContent = `High Score: ${highScore}`;
-      }
-
+        finalHighScore.textContent = `🏆 High Score: ${highScore}`;
+        highScoreDisplay.textContent = `🏆 High Score: ${highScore}`;
       }
 
       finalScore.textContent = `Score: ${score}`;
       createParticles(window.innerWidth / 2, window.innerHeight / 2, 30);
-      avatar = null;
     }
 
     function updateLeaderboard() {
@@ -993,7 +933,7 @@
     }
 
     function shareScore() {
-      const shareText = `I scored ${score} in TAP WARS with a x${scoreCount} combo! 🔥 Try to beat me! ${window.location.href}`;
+      const shareText = `I scored ${score} in TAP WARS with a x${comboCount} combo! 🔥 Try to beat me! ${window.location.href}`;
       if (navigator.share) {
         navigator.share({ title: 'TAP WARS', text: shareText, url: window.location.href });
       } else {
@@ -1010,7 +950,7 @@
     themeToggle.addEventListener('click', () => {
       body.classList.toggle('light');
       const mode = body.classList.contains('light') ? 'light' : 'dark';
-      themeToggle.textContent = mode === 'light' ? '🌞 Light Mode' : 'Dark Mode';
+      themeToggle.textContent = mode === 'light' ? '🌞 Light Mode' : '🌙 Dark Mode';
       localStorage.setItem('tapWarsTheme', mode);
     });
 
