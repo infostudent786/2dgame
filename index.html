@@ -5,33 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🔥 TAP WARS</title>
   <style>
+    :root {
+      --bg-light: #f5f5f5;
+      --text-light: #222;
+      --bg-dark: #111;
+      --text-dark: #eee;
+      --blue: #1f8ef1;
+      --blue-dark: #1664b0;
+      --green: #22c55e;
+      --orange: #f97316;
+      --purple: #6366f1;
+      --cyan: #00ffcc;
+      --cyan-dark: #009f89;
+    }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #111;
-      color: #fff;
+      background: var(--bg-dark);
+      color: var(--text-dark);
       text-align: center;
       margin: 0;
       padding: 0;
       user-select: none;
+      transition: background 0.4s, color 0.4s;
     }
-
+    body.light {
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
     h1 {
       margin-top: 40px;
       font-size: 3em;
-      color: #facc15;
-      text-shadow: 0 0 10px #facc15;
+      color: var(--orange);
+      text-shadow: 0 0 10px var(--orange);
+      transition: color 0.4s;
     }
-
+    body.light h1 {
+      color: var(--purple);
+      text-shadow: 0 0 10px var(--purple);
+    }
     #game {
       margin-top: 30px;
     }
-
     #countdown {
       font-size: 1.5em;
       margin-bottom: 10px;
       min-height: 28px;
     }
-
     button {
       padding: 20px 40px;
       font-size: 1.2em;
@@ -42,71 +61,87 @@
       transition: 0.2s;
       user-select: none;
     }
-
     #tapButton {
-      background: #1f8ef1;
+      background: var(--blue);
       color: #fff;
-      box-shadow: 0 5px #1664b0;
+      box-shadow: 0 5px var(--blue-dark);
     }
-
     #tapButton:active {
       animation: pop 0.2s ease-in-out;
-      background: #ff5722;
+      background: var(--orange);
       box-shadow: 0 2px #aa3e17;
       transform: translateY(3px);
     }
-
     #tapButton.double {
-      background: #00ffcc;
-      box-shadow: 0 5px #009f89;
-      text-shadow: 0 0 8px #00ffcc;
+      background: var(--cyan);
+      box-shadow: 0 5px var(--cyan-dark);
+      text-shadow: 0 0 8px var(--cyan);
     }
-
+    body.light #tapButton {
+      background: var(--purple);
+      box-shadow: 0 5px #4b47a5;
+      color: #fff;
+    }
+    body.light #tapButton.double {
+      background: var(--cyan);
+      box-shadow: 0 5px var(--cyan-dark);
+      text-shadow: 0 0 8px var(--cyan);
+    }
     #startButton {
-      background: #22c55e;
+      background: var(--green);
       color: #fff;
       box-shadow: 0 5px #178c3d;
     }
-
     #restartButton {
-      background: #f97316;
+      background: var(--orange);
       color: #fff;
       box-shadow: 0 5px #b5560e;
     }
-
     #shareBtn {
-      background: #6366f1;
+      background: var(--purple);
       color: #fff;
       box-shadow: 0 5px #3f46c1;
     }
-
+    #themeToggle {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      padding: 10px 15px;
+      font-size: 0.9em;
+      background: var(--purple);
+      color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 3px #3f46c1;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.4s;
+      z-index: 100;
+    }
+    #themeToggle:hover {
+      background: #4f51c9;
+    }
     @keyframes pop {
       0% { transform: scale(1); }
       50% { transform: scale(1.2); }
       100% { transform: scale(1); }
     }
-
     @keyframes bounce {
       0% { transform: scale(1); }
       50% { transform: scale(1.3); }
       100% { transform: scale(1); }
     }
-
     #score {
       font-size: 2.2em;
       margin-top: 20px;
       min-height: 40px;
       transition: transform 0.15s;
     }
-
     .bounce {
       animation: bounce 0.2s;
     }
-
     .hidden {
       display: none;
     }
-
     #progressBarContainer {
       width: 80%;
       height: 20px;
@@ -115,31 +150,66 @@
       border-radius: 10px;
       overflow: hidden;
       box-shadow: inset 0 0 5px #000;
+      transition: background 0.4s;
     }
-
+    body.light #progressBarContainer {
+      background: #ddd;
+      box-shadow: inset 0 0 5px #aaa;
+    }
     #progressBar {
       width: 100%;
       height: 100%;
-      background: #1f8ef1;
-      transition: width 1s linear;
+      background: var(--blue);
+      transition: width 1s linear, background 0.4s;
     }
-
+    body.light #progressBar {
+      background: var(--purple);
+    }
     #powerUp {
       font-size: 1.3em;
       margin-top: 10px;
-      color: #00ffcc;
-      text-shadow: 0 0 10px #00ffcc;
+      color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan);
       animation: pulse 1s infinite;
       min-height: 24px;
+      transition: color 0.4s;
     }
-
+    body.light #powerUp {
+      color: #0ec0b6;
+      text-shadow: 0 0 10px #0ec0b6;
+    }
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.5; }
     }
+    /* Confetti styles */
+    .confetti-piece {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: #f97316;
+      opacity: 0.9;
+      pointer-events: none;
+      animation-name: fall, spin;
+      animation-duration: 3s, 1.5s;
+      animation-iteration-count: 1, infinite;
+      animation-timing-function: linear, linear;
+      border-radius: 3px;
+      z-index: 9999;
+    }
+    @keyframes fall {
+      0% {transform: translateY(-10px);}
+      100% {transform: translateY(100vh);}
+    }
+    @keyframes spin {
+      0% {transform: rotate(0deg);}
+      100% {transform: rotate(360deg);}
+    }
   </style>
 </head>
 <body>
+
+  <button id="themeToggle" title="Toggle Light/Dark Mode">🌙 Dark Mode</button>
 
   <h1>🔥 TAP WARS</h1>
   <div id="game">
@@ -153,6 +223,7 @@
     <button id="startButton">Start Game</button>
     <button id="tapButton" class="hidden">TAP!</button>
     <div id="score" class="hidden">Score: 0</div>
+    <div id="highScoreDisplay" class="hidden" style="margin-top:10px; font-size:1.1em; color:#facc15; min-height:24px;"></div>
     <button id="restartButton" class="hidden">Play Again</button>
     <button id="shareBtn" class="hidden">Share Score</button>
   </div>
@@ -161,8 +232,11 @@
   <audio id="tapSound" src="https://freesound.org/data/previews/256/256113_3263906-lq.mp3"></audio>
   <audio id="powerSound" src="https://freesound.org/data/previews/331/331912_3248244-lq.mp3"></audio>
   <audio id="endSound" src="https://freesound.org/data/previews/171/171497_2398400-lq.mp3"></audio>
+  <audio id="comboSound" src="https://freesound.org/data/previews/66/66717_634166-lq.mp3"></audio>
 
   <script>
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
     const countdown = document.getElementById('countdown');
     const startButton = document.getElementById('startButton');
     const tapButton = document.getElementById('tapButton');
@@ -172,14 +246,28 @@
     const tapSound = document.getElementById('tapSound');
     const powerSound = document.getElementById('powerSound');
     const endSound = document.getElementById('endSound');
+    const comboSound = document.getElementById('comboSound');
     const progressBar = document.getElementById('progressBar');
     const progressContainer = document.getElementById('progressBarContainer');
     const powerUp = document.getElementById('powerUp');
+    const highScoreDisplay = document.getElementById('highScoreDisplay');
 
     let score = 0;
     let timeLeft = 10;
     let interval;
     let doublePoints = false;
+
+    // Combo system variables
+    let lastTapTime = 0;
+    let comboCount = 0;
+    let comboTimeout;
+
+    // High score from localStorage
+    let highScore = localStorage.getItem('tapWarsHighScore') || 0;
+    if (highScore > 0) {
+      highScoreDisplay.textContent = `🏆 High Score: ${highScore}`;
+      highScoreDisplay.classList.remove('hidden');
+    }
 
     function startGame() {
       score = 0;
@@ -195,15 +283,16 @@
       shareBtn.classList.add('hidden');
       progressContainer.classList.remove('hidden');
       powerUp.classList.add('hidden');
+      highScoreDisplay.classList.add('hidden');
       doublePoints = false;
       tapButton.classList.remove('double');
+      comboCount = 0;
 
       interval = setInterval(() => {
         timeLeft--;
         countdown.textContent = 'Time: ' + timeLeft + 's';
         progressBar.style.width = (timeLeft * 10) + '%';
 
-        // Power-up activates at 5s and 2s left
         if (timeLeft === 5 || timeLeft === 2) {
           activatePowerUp();
         }
@@ -226,7 +315,7 @@
         doublePoints = false;
         powerUp.classList.add('hidden');
         tapButton.classList.remove('double');
-      }, 3000); // Power-up lasts 3 seconds
+      }, 3000);
     }
 
     function endGame() {
@@ -235,21 +324,53 @@
       restartButton.classList.remove('hidden');
       shareBtn.classList.remove('hidden');
       powerUp.classList.add('hidden');
+
+      // Check and update high score
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('tapWarsHighScore', highScore);
+        highScoreDisplay.textContent = `🏆 New High Score: ${highScore}! 🎉`;
+        highScoreDisplay.style.color = '#0f0';
+        highScoreDisplay.classList.remove('hidden');
+        triggerConfetti();
+      } else {
+        highScoreDisplay.textContent = `🏆 High Score: ${highScore}`;
+        highScoreDisplay.style.color = '#facc15';
+        highScoreDisplay.classList.remove('hidden');
+      }
+
       endSound.currentTime = 0;
       endSound.play();
     }
 
     tapButton.addEventListener('click', () => {
-      score += doublePoints ? 2 : 1;
-      scoreDisplay.textContent = 'Score: ' + score;
+      const now = Date.now();
+      const delta = now - lastTapTime;
+      lastTapTime = now;
+
+      // If tapped faster than 400ms, increase combo
+      if (delta < 400) {
+        comboCount++;
+        if (comboCount > 1) {
+          comboSound.currentTime = 0;
+          comboSound.play();
+        }
+      } else {
+        comboCount = 0;
+      }
+
+      // Base points plus combo bonus (combo bonus = comboCount)
+      const pointsEarned = (doublePoints ? 2 : 1) + comboCount;
+      score += pointsEarned;
+
+      // Animate score bounce
+      scoreDisplay.textContent = `Score: ${score} (+${pointsEarned})`;
       scoreDisplay.classList.add('bounce');
       setTimeout(() => scoreDisplay.classList.remove('bounce'), 150);
 
       tapSound.currentTime = 0;
       tapSound.play();
     });
-
-    startButton.addEventListener('click', startGame);
 
     restartButton.addEventListener('click', () => {
       location.reload();
@@ -266,6 +387,51 @@
         alert("Copy and share this:\n\n" + shareText);
       }
     });
+
+    // Dark/Light mode toggle
+    themeToggle.addEventListener('click', () => {
+      if (body.classList.contains('light')) {
+        body.classList.remove('light');
+        themeToggle.textContent = '🌙 Dark Mode';
+        localStorage.setItem('tapWarsTheme', 'dark');
+      } else {
+        body.classList.add('light');
+        themeToggle.textContent = '🌞 Light Mode';
+        localStorage.setItem('tapWarsTheme', 'light');
+      }
+    });
+
+    // Load theme from localStorage
+    window.onload = () => {
+      if (localStorage.getItem('tapWarsTheme') === 'light') {
+        body.classList.add('light');
+        themeToggle.textContent = '🌞 Light Mode';
+      } else {
+        themeToggle.textContent = '🌙 Dark Mode';
+      }
+    };
+
+    // Confetti celebration
+    function triggerConfetti() {
+      const colors = ['#f97316', '#22c55e', '#1f8ef1', '#6366f1', '#00ffcc'];
+      const numConfetti = 50;
+
+      for(let i=0; i < numConfetti; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti-piece');
+        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.animationDelay = (Math.random() * 3) + 's';
+        confetti.style.width = (5 + Math.random() * 10) + 'px';
+        confetti.style.height = confetti.style.width;
+        document.body.appendChild(confetti);
+
+        // Remove after animation
+        setTimeout(() => {
+          confetti.remove();
+        }, 4000);
+      }
+    }
   </script>
 </body>
 </html>
