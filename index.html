@@ -3,58 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🔥 Tap Game</title>
+  <title>🔥 Tap Dash</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #111;
-      color: white;
       margin: 0;
       padding: 0;
+      text-align: center;
+      font-family: 'Arial', sans-serif;
+      background: #121212;
+      color: white;
+      overflow: hidden;
     }
-    body.light {
-      background-color: #f0f0f0;
-      color: #111;
+    button {
+      font-size: 1.2rem;
+      padding: 15px 30px;
+      margin: 10px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
     }
-    #themeToggle {
+    #tapButton {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 10px 20px;
+      transition: all 0.3s ease;
+      background: #00bcd4;
+      color: white;
+      box-shadow: 0 5px #007e8a;
     }
-    #musicToggle {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      padding: 10px 20px;
+    #tapButton:active {
+      transform: scale(1.2);
+      box-shadow: none;
     }
     .hidden {
       display: none;
     }
-    button {
-      padding: 20px;
-      font-size: 1.2em;
-      margin: 10px;
-      cursor: pointer;
-    }
     #score {
-      font-size: 1.5em;
-      margin: 20px;
+      font-size: 1.8rem;
+      margin-top: 20px;
+    }
+    #countdown {
+      margin: 20px 0;
+      font-size: 1.3rem;
+    }
+    #startButton {
+      background-color: #4caf50;
+      color: white;
+    }
+    #restartButton {
+      background-color: #f44336;
+      color: white;
+    }
+    #musicToggle {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: #ff9800;
     }
   </style>
 </head>
 <body>
-  <button id="themeToggle">Toggle Theme</button>
   <button id="musicToggle">🔊 Music On</button>
-
-  <h1>🔥 Tap Game</h1>
-
-  <div id="modeSelect">
-    <label><input type="radio" name="mode" value="classic" checked> Classic</label>
-    <label><input type="radio" name="mode" value="sudden"> Sudden Death</label>
-  </div>
-
+  <h1>🔥 Tap Dash</h1>
   <div id="countdown">Click Start to Begin</div>
   <button id="startButton">Start Game</button>
   <button id="tapButton" class="hidden">TAP!</button>
@@ -62,54 +70,53 @@
   <div id="highScoreDisplay"></div>
   <button id="restartButton" class="hidden">Play Again</button>
 
-  <audio id="bgMusic" src="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Scott_Holmes/Arcade_Mode/Scott_Holmes_-_Arcade_Dreams.mp3" loop></audio>
+  <!-- Background Music -->
+  <audio id="bgMusic" loop>
+    <source src="https://cdn.pixabay.com/audio/2022/03/11/audio_d20ad74770.mp3" type="audio/mp3" />
+  </audio>
 
   <script>
-    const themeToggle = document.getElementById('themeToggle');
-    const musicToggle = document.getElementById('musicToggle');
     const startButton = document.getElementById('startButton');
     const tapButton = document.getElementById('tapButton');
     const restartButton = document.getElementById('restartButton');
     const countdown = document.getElementById('countdown');
     const scoreDisplay = document.getElementById('score');
     const highScoreDisplay = document.getElementById('highScoreDisplay');
+    const musicToggle = document.getElementById('musicToggle');
     const bgMusic = document.getElementById('bgMusic');
-    const modeSelect = document.getElementById('modeSelect');
 
     let score = 0;
-    let timeLeft = 10;
+    let timeLeft = 15;
     let interval;
-    let highScore = localStorage.getItem('tapHighScore') || 0;
-    let musicPlaying = true;
+    let moveInterval;
+    let musicOn = true;
+    let highScore = localStorage.getItem('tapDashHighScore') || 0;
+
+    function moveTapButton() {
+      const x = Math.random() * (window.innerWidth - 100);
+      const y = Math.random() * (window.innerHeight - 100);
+      tapButton.style.left = `${x}px`;
+      tapButton.style.top = `${y}px`;
+    }
 
     function startGame() {
       score = 0;
-      timeLeft = 10;
-      countdown.textContent = 'Time: 10s';
+      timeLeft = 15;
       scoreDisplay.textContent = 'Score: 0';
       scoreDisplay.classList.remove('hidden');
       tapButton.classList.remove('hidden');
       startButton.classList.add('hidden');
       restartButton.classList.add('hidden');
-      modeSelect.classList.add('hidden');
-      highScoreDisplay.textContent = '';
-
-      if (musicPlaying) {
-        bgMusic.play();
-      }
-
-      const mode = document.querySelector('input[name="mode"]:checked').value;
-      if (mode === 'classic') {
-        interval = setInterval(() => {
-          timeLeft--;
-          countdown.textContent = `Time: ${timeLeft}s`;
-          if (timeLeft <= 0) {
-            clearInterval(interval);
-            endGame();
-          }
-        }, 1000);
-      } else {
-        setTimeout(endGame, 10000); // sudden death ends after timeout
+      countdown.textContent = `Time: ${timeLeft}s`;
+      moveTapButton();
+      interval = setInterval(() => {
+        timeLeft--;
+        countdown.textContent = `Time: ${timeLeft}s`;
+        if (timeLeft <= 0) endGame();
+      }, 1000);
+      moveInterval = setInterval(moveTapButton, 1000);
+      if (musicOn) {
+        bgMusic.play().catch(() => {}); // silent fail if autoplay blocked
       }
     }
 
@@ -119,38 +126,37 @@
     }
 
     function endGame() {
-      bgMusic.pause();
-      bgMusic.currentTime = 0;
-      countdown.textContent = 'Game Over!';
+      clearInterval(interval);
+      clearInterval(moveInterval);
       tapButton.classList.add('hidden');
       restartButton.classList.remove('hidden');
-
+      countdown.textContent = 'Game Over!';
       if (score > highScore) {
         highScore = score;
-        localStorage.setItem('tapHighScore', highScore);
-        highScoreDisplay.textContent = `🎉 New High Score: ${score}`;
+        localStorage.setItem('tapDashHighScore', score);
+        highScoreDisplay.textContent = `🏆 New High Score: ${score}`;
       } else {
         highScoreDisplay.textContent = `High Score: ${highScore}`;
       }
+      bgMusic.pause();
+      bgMusic.currentTime = 0;
     }
 
-    themeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('light');
-    });
-
-    musicToggle.addEventListener('click', () => {
-      musicPlaying = !musicPlaying;
-      musicToggle.textContent = musicPlaying ? '🔊 Music On' : '🔇 Music Off';
-      if (!musicPlaying) {
+    function toggleMusic() {
+      musicOn = !musicOn;
+      musicToggle.textContent = musicOn ? '🔊 Music On' : '🔇 Music Off';
+      if (!musicOn) {
         bgMusic.pause();
-      } else {
-        bgMusic.play();
+        bgMusic.currentTime = 0;
+      } else if (timeLeft > 0) {
+        bgMusic.play().catch(() => {});
       }
-    });
+    }
 
     startButton.addEventListener('click', startGame);
     restartButton.addEventListener('click', startGame);
     tapButton.addEventListener('click', tap);
+    musicToggle.addEventListener('click', toggleMusic);
   </script>
 </body>
 </html>
